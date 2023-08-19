@@ -2,11 +2,10 @@
 Main module for the application. This module is responsible for starting the
 application and running the main loop. The main loop is responsible for
 displaying the main menu and calling the appropriate functions based on the
-user's input.
+user"s input.
 """
 
 import os
-import sys
 import pickle
 import folium
 import numpy as np
@@ -18,15 +17,17 @@ from streamlit_folium import st_folium
 from modeling import original_to_encoded
 from sklearn.linear_model import LinearRegression
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Used for state abbreviations and naming.
+STATES_DICT = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Canal Zone": "CZ", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "District of Columbia": "DC", "Florida": "FL", "Georgia": "GA", "Guam": "GU", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Puerto Rico": "PR", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virgin Islands": "VI", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
+FILE_PATH = os.path.dirname(os.path.abspath(""))
+RF_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "rf_model.pkl")
+LN_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "ln_model.pkl")
 
 
-# Create a app title with title method
-
-# in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
-
-
+# TODO: Relocate helper functions to a separate file.
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
+    # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
     my_dict = {
         "State": original_to_encoded.get(state),
         "Low_Income_Ratio": ratio_low_income,
@@ -48,12 +49,7 @@ def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white
 
 
 def model_linear(case_data, test, demographic):
-    # demographic = "White"
-    dict_race = {'White': "white_population_ratio",
-                 'Black': "black_population_ratio",
-                 'Asian': "asian_population_ratio",
-                 'American Indian': "american_indian_population_ratio",
-                 'Hispanic': 'hispanic_population_ratio'}
+    dict_race = {"White": "white_population_ratio", "Black": "black_population_ratio", "Asian": "asian_population_ratio", "American Indian": "american_indian_population_ratio", "Hispanic": "hispanic_population_ratio"}
 
     demographic_column = dict_race.get(demographic)
 
@@ -64,19 +60,15 @@ def model_linear(case_data, test, demographic):
     if demographic_column is None:
         st.error("Invalid demographic selection.")
         return
-# test = "Frequency of Fines"
     if test == "Frequency of Fines":
         case_data[demographic_column] = case_data[demographic_column].round(2)
         case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
-        case_data = case_data.groupby(demographic_column)['fed_penalty_assessed_amt'].count().reset_index()
-        case_data_2 = case_data_2.groupby("low_income_ratio")['fed_penalty_assessed_amt'].count().reset_index()
+        case_data = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].count().reset_index()
+        case_data_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].count().reset_index()
         case_data = case_data[case_data[demographic_column] != 0]
 
-    else:
-        pass
-
     X = case_data[[demographic_column]]
-    y = case_data['fed_penalty_assessed_amt']
+    y = case_data["fed_penalty_assessed_amt"]
 
     # Create and fit the linear regression model
     model = LinearRegression()
@@ -91,34 +83,34 @@ def model_linear(case_data, test, demographic):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.metric('Coefficient', round(model.coef_.item(), 2))
+        st.metric("Coefficient", round(model.coef_.item(), 2))
     with col2:
-        st.metric('Intercept:', round(model.intercept_, 2))
+        st.metric("Intercept:", round(model.intercept_, 2))
 
     case_data[demographic_column] = case_data[demographic_column].round(2)
-    case_data_avg = case_data.groupby(demographic_column)['fed_penalty_assessed_amt'].mean().reset_index()
+    case_data_avg = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
     ratio = case_data_avg[demographic_column]
-    penalties = case_data_avg['fed_penalty_assessed_amt']
+    penalties = case_data_avg["fed_penalty_assessed_amt"]
 
     # Create the scatter plot
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(ratio, penalties)
 
     # Plot the best-fit line
-    ax.plot(X, predictions, color='red', linewidth=2)
+    ax.plot(X, predictions, color="red", linewidth=2)
 
     # Set labels and title
-    ax.set_xlabel(f'Population Ratio - {demographic}')
+    ax.set_xlabel(f"Population Ratio - {demographic}")
     if test != "Frequency of Fines":
-        ax.set_ylabel('Dollar Amount of Penalties')
+        ax.set_ylabel("Dollar Amount of Penalties")
     else:
-        ax.set_ylabel('Frequency of Penalties')
-    ax.set_title('Scatter Plot: Population Ratio vs. Penalties with Best-Fit Line')
+        ax.set_ylabel("Frequency of Penalties")
+    ax.set_title("Scatter Plot: Population Ratio vs. Penalties with Best-Fit Line")
 
     # Set a smaller figure background (padding)
-    fig.set_facecolor('#f0f0f0')
+    fig.set_facecolor("#f0f0f0")
 
     # Display the scatter plot in Streamlit
     st.pyplot(fig)
@@ -129,7 +121,7 @@ def model_linear(case_data, test, demographic):
     st.markdown("The low income ratio is based on the number of people in the selected area that have an income "
                 "less than two times the poverty level, based on the 2016-2020 ACS 5-Year Summary ")
     X2 = case_data_2[["low_income_ratio"]]
-    y2 = case_data_2['fed_penalty_assessed_amt']
+    y2 = case_data_2["fed_penalty_assessed_amt"]
 
     # Create and fit the linear regression model
     model2 = LinearRegression()
@@ -139,47 +131,45 @@ def model_linear(case_data, test, demographic):
 
     col1, col2 = st.columns(2)
     with col1:
-        st.metric('Coefficient', round(model2.coef_.item(), 2))
+        st.metric("Coefficient", round(model2.coef_.item(), 2))
     with col2:
-        st.metric('Intercept:', round(model2.intercept_, 2))
+        st.metric("Intercept:", round(model2.intercept_, 2))
 
     case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
-    case_data_avg_2 = case_data_2.groupby("low_income_ratio")['fed_penalty_assessed_amt'].mean().reset_index()
+    case_data_avg_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
     ratio2 = case_data_avg_2["low_income_ratio"]
-    penalties2 = case_data_avg_2['fed_penalty_assessed_amt']
+    penalties2 = case_data_avg_2["fed_penalty_assessed_amt"]
 
     # Create the scatter plot
     fig2, ax2 = plt.subplots(figsize=(8, 5))
     ax2.scatter(ratio2, penalties2)
 
     # Plot the best-fit line
-    ax2.plot(X2, predictions2, color='red', linewidth=2)
+    ax2.plot(X2, predictions2, color="red", linewidth=2)
 
     # Set labels and title
-    ax2.set_xlabel('Low Income Population Ratio')
+    ax2.set_xlabel("Low Income Population Ratio")
     if test != "Frequency of Fines":
-        ax2.set_ylabel('Dollar Amount of Penalties')
+        ax2.set_ylabel("Dollar Amount of Penalties")
     else:
-        ax2.set_ylabel('Frequency of Penalties')
-    ax2.set_title('Scatter Plot: Population Ratio vs. Penalties with Best-Fit Line')
+        ax2.set_ylabel("Frequency of Penalties")
+    ax2.set_title("Scatter Plot: Population Ratio vs. Penalties with Best-Fit Line")
 
     # Set a smaller figure background (padding)
-    fig2.set_facecolor('#f0f0f0')
+    fig2.set_facecolor("#f0f0f0")
 
     # Display the scatter plot in Streamlit
     st.pyplot(fig2)
 
 
-def display_facts(merged_data, state, county, primary_law, field_name, number_format='${:,}'):
-    # print(merged_data)
+def display_facts(merged_data, state, county, primary_law, field_name, number_format="${:,}"):
     merged_data = merged_data[(merged_data["state"] == state) & (merged_data["county"] == county) & (merged_data["primary_law"] == primary_law)]
-    total = merged_data['fed_penalty_assessed_amt'].mean()
     print(merged_data)
 
     if not merged_data.empty:
-        total = merged_data['fed_penalty_assessed_amt'].mean()
+        total = merged_data["fed_penalty_assessed_amt"].mean()
 
         if pd.notna(total):
             st.metric(field_name, number_format.format(round(total)))
@@ -190,74 +180,71 @@ def display_facts(merged_data, state, county, primary_law, field_name, number_fo
 
 
 def display_map(merged_data):
-    map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles='CartoDB positron')
+    display_map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles="CartoDB positron")
     oakland = st.selectbox("Remove Oakland?", ("Y", "N"))
     if oakland == "Y":
-        merged_data = merged_data[merged_data['county'] != "OAKLAND"]
-    else:
-        pass
-    state_data = merged_data.groupby(['full_state'])['fed_penalty_assessed_amt'].mean().reset_index()
+        merged_data = merged_data[merged_data["county"] != "OAKLAND"]
+    state_data = merged_data.groupby(["full_state"])["fed_penalty_assessed_amt"].mean().reset_index()
     choropleth = folium.Choropleth(
-        geo_data='us-state-boundaries.geojson',
+        geo_data="us-state-boundaries.geojson",
         data=state_data,
-        columns=('full_state', 'fed_penalty_assessed_amt'),
-        key_on='feature.properties.name',
+        columns=("full_state", "fed_penalty_assessed_amt"),
+        key_on="feature.properties.name",
         line_opacity=0.8,
         highlight=True)
-    choropleth.geojson.add_to(map)
+    choropleth.geojson.add_to(display_map)
     # choropleth.geojson.add_to(map)
     choropleth.geojson.add_child(
-        folium.features.GeoJsonTooltip(['name'], labels=False))
-    st_map = st_folium(map, width=700, height=450)
-    state_name = ''
-    if st_map['last_active_drawing']:
-        state_name = st_map['last_active_drawing']['properties']['name']
+        folium.features.GeoJsonTooltip(["name"], labels=False))
+    st_map = st_folium(display_map, width=700, height=450)
+    state_name = ""
+    if st_map["last_active_drawing"]:
+        state_name = st_map["last_active_drawing"]["properties"]["name"]
     return abbrev_name(state_name)
 
 
 def display_pie_chart(merged_data, grouped_data_low_income, state, county):
     merged_data = merged_data[(merged_data["state"] == state) & (merged_data["county"] == county)]
-    demo_data = merged_data.loc[:, ['white_population_ratio', 'black_population_ratio', 'hispanic_population_ratio',
-                                    'asian_population_ratio', 'american_indian_population_ratio', 'other']]
+    demo_data = merged_data.loc[:, ["white_population_ratio", "black_population_ratio", "hispanic_population_ratio",
+                                    "asian_population_ratio", "american_indian_population_ratio", "other"]]
     demo_data = demo_data.rename(
-        columns={'white_population_ratio': 'White', 'black_population_ratio': "Black", 'hispanic_population_ratio': "Hispanic",
-                 'asian_population_ratio': "Asian", 'american_indian_population_ratio': "American Indian", 'other': "Other"})
+        columns={"white_population_ratio": "White", "black_population_ratio": "Black", "hispanic_population_ratio": "Hispanic", "asian_population_ratio": "Asian", "american_indian_population_ratio": "American Indian", "other": "Other"})
 
     data_long = demo_data.melt()
 
     # Create the bar chart for demographic data
     fig, ax = plt.subplots(figsize=(8, 5))  # Set the size of the graph to 8x5 inches
-    colors = ['#1f78b4', '#33a02c', '#fb9a99', '#e31a1c', '#ff7f00', '#6a3d9a']  # Custom colors for the chart
+    colors = ["#1f78b4", "#33a02c", "#fb9a99", "#e31a1c", "#ff7f00", "#6a3d9a"]  # Custom colors for the chart
 
-    ax.bar(data_long['variable'], data_long['value'], color=colors)
+    ax.bar(data_long["variable"], data_long["value"], color=colors)
 
-    ax.set_title('Demographic Bar Chart')
-    ax.set_xlabel('Demographic Group')
-    ax.set_ylabel('Population Ratio')
+    ax.set_title("Demographic Bar Chart")
+    ax.set_xlabel("Demographic Group")
+    ax.set_ylabel("Population Ratio")
 
     # Set a smaller figure background (padding)
-    fig.set_facecolor('#f0f0f0')
+    fig.set_facecolor("#f0f0f0")
 
     # Display the bar chart in Streamlit
 
     grouped_data_low_income = grouped_data_low_income[(grouped_data_low_income["state"] == state) & (grouped_data_low_income["county"] == county)]
-    income_data = grouped_data_low_income.loc[:, ['low_income_ratio', 'other_income_ratio']]
+    income_data = grouped_data_low_income.loc[:, ["low_income_ratio", "other_income_ratio"]]
     income_data = income_data.melt()
 
     # Create the pie chart for income ratio data
     fig2, ax2 = plt.subplots(figsize=(5, 5))
-    colors = ['#1f78b4', '#33a02c']
-    ax2.pie(income_data['value'], labels=income_data['variable'], autopct=lambda p: '{:.1f}%'.format(p) if p >= 2 else '',
-            startangle=140, colors=colors, textprops={'fontsize': 8, 'fontweight': 'bold'})
+    colors = ["#1f78b4", "#33a02c"]
+    ax2.pie(income_data["value"], labels=income_data["variable"], autopct=lambda p: "{:.1f}%".format(p) if p >= 2 else "",
+            startangle=140, colors=colors, textprops={"fontsize": 8, "fontweight": "bold"})
 
-    ax2.axis('equal')
-    ax2.set_title('Income Ratio Pie Chart')
+    ax2.axis("equal")
+    ax2.set_title("Income Ratio Pie Chart")
 
     # Set a darker grey background for the plot area
-    ax2.set_facecolor('#444444')
+    ax2.set_facecolor("#444444")
 
     # Set a smaller figure background (padding)
-    fig2.set_facecolor('#f0f0f0')
+    fig2.set_facecolor("#f0f0f0")
 
     # Display the income ratio pie chart in Streamlit
 
@@ -269,106 +256,84 @@ def display_pie_chart(merged_data, grouped_data_low_income, state, county):
 
 
 def plot_count_of_violations_and_penalty_value(df):
-
     # Prompt the user to input the number of counties they want to analyze
     num_counties = st.number_input("Enter the number of counties you want to analyze:", min_value=1, step=1)
 
     selected_counties = []
+
     for i in range(num_counties):
         county = st.text_input(f"Enter the name of county {i + 1}:")
         if county.strip():
-            selected_counties.append(county.upper())  # Convert to uppercase for consistency
+            # Convert to uppercase for consistency
+            selected_counties.append(county.upper())
 
     if not selected_counties:
         st.warning("Please enter at least one county.")
         return
-
-    # Filter the DataFrame based on the user-selected counties and store the result in 'merged_data_filtered'
-    merged_data_filtered = df[df['county'].isin(selected_counties)]
+    # Filter the DataFrame based on the user-selected counties and store the result in "merged_data_filtered"
+    merged_data_filtered = df[df["county"].isin(selected_counties)]
 
     # --- Plot the Count of Violations ---
     # Group data by FACILITY_STATE and STATUTE_CODE, and calculate the count of violations
-    law_counts_by_county = merged_data_filtered.groupby(['county', 'primary_law']).size().reset_index(name='COUNT')
+    law_counts_by_county = merged_data_filtered.groupby(["county", "primary_law"]).size().reset_index(name="COUNT")
 
     # Pivot the data to have counties as rows and law status codes as columns
-    law_counts_pivot = law_counts_by_county.pivot(index='county', columns='primary_law', values='COUNT').fillna(0)
+    law_counts_pivot = law_counts_by_county.pivot(index="county", columns="primary_law", values="COUNT").fillna(0)
 
-    # Display the count of violations as a stacked bar chart using Streamlit's bar_chart
-    st.subheader('Count of Violations by Statute Code and County')
+    # Display the count of violations as a stacked bar chart using Streamlit"s bar_chart
+    st.subheader("Count of Violations by Statute Code and County")
     st.bar_chart(law_counts_pivot, use_container_width=True)
 
     # --- Plot the Penalty Value ---
     # Group data by FACILITY_STATE and STATUTE_CODE, and calculate the sum of TOTAL_PENALTY_ASSESSED_AMT
-    law_penalty_sum_by_county = merged_data_filtered.groupby(['county', 'primary_law'])['fed_penalty_assessed_amt'].sum().reset_index(name='SUM_PENALTY')
+    law_penalty_sum_by_county = merged_data_filtered.groupby(["county", "primary_law"])["fed_penalty_assessed_amt"].sum().reset_index(name="SUM_PENALTY")
 
     # Pivot the data to have counties as rows and law status codes as columns
-    law_penalty_pivot = law_penalty_sum_by_county.pivot(index='county', columns='primary_law', values='SUM_PENALTY').fillna(0)
+    law_penalty_pivot = law_penalty_sum_by_county.pivot(index="county", columns="primary_law", values="SUM_PENALTY").fillna(0)
 
-    # Display the penalty value as a stacked bar chart using Streamlit's bar_chart
-    st.subheader('Total Penalty Assessed Amount by Statute Code and County')
+    # Display the penalty value as a stacked bar chart using Streamlit"s bar_chart
+    st.subheader("Total Penalty Assessed Amount by Statute Code and County")
     st.bar_chart(law_penalty_pivot, use_container_width=True)
 
 
-def full_name(state_name):
-    state_names = {'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA', 'Canal Zone': 'CZ', 'Colorado': 'CO',
-                   'Connecticut': 'CT', 'Delaware': 'DE', 'District of Columbia': 'DC', 'Florida': 'FL', 'Georgia': 'GA', 'Guam': 'GU', 'Hawaii': 'HI',
-                   'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME',
-                   'Maryland': 'MD', 'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO', 'Montana': 'MT',
-                   'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC',
-                   'North Dakota': 'ND', 'Ohio': 'OH', 'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Puerto Rico': 'PR', 'Rhode Island': 'RI',
-                   'South Carolina': 'SC', 'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT', 'Virgin Islands': 'VI',
-                   'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'}
-
-    reverse_state_names = {v: k for k, v in state_names.items()}
-
-    return reverse_state_names.get(state_name)
+def full_name(state_abbrev: str, states_dict=STATES_DICT) -> str:
+    reverse_states = {v: k for k, v in states_dict.items()}
+    return reverse_states[state_abbrev]
 
 
-def abbrev_name(state_name):
-    state_names = {'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR', 'California': 'CA', 'Canal Zone': 'CZ', 'Colorado': 'CO',
-                   'Connecticut': 'CT', 'Delaware': 'DE', 'District of Columbia': 'DC', 'Florida': 'FL', 'Georgia': 'GA', 'Guam': 'GU', 'Hawaii': 'HI',
-                   'Idaho': 'ID', 'Illinois': 'IL', 'Indiana': 'IN', 'Iowa': 'IA', 'Kansas': 'KS', 'Kentucky': 'KY', 'Louisiana': 'LA', 'Maine': 'ME',
-                   'Maryland': 'MD', 'Massachusetts': 'MA', 'Michigan': 'MI', 'Minnesota': 'MN', 'Mississippi': 'MS', 'Missouri': 'MO', 'Montana': 'MT',
-                   'Nebraska': 'NE', 'Nevada': 'NV', 'New Hampshire': 'NH', 'New Jersey': 'NJ', 'New Mexico': 'NM', 'New York': 'NY', 'North Carolina': 'NC',
-                   'North Dakota': 'ND', 'Ohio': 'OH', 'Oklahoma': 'OK', 'Oregon': 'OR', 'Pennsylvania': 'PA', 'Puerto Rico': 'PR', 'Rhode Island': 'RI',
-                   'South Carolina': 'SC', 'South Dakota': 'SD', 'Tennessee': 'TN', 'Texas': 'TX', 'Utah': 'UT', 'Vermont': 'VT', 'Virgin Islands': 'VI',
-                   'Virginia': 'VA', 'Washington': 'WA', 'West Virginia': 'WV', 'Wisconsin': 'WI', 'Wyoming': 'WY'}
-
-    return state_names.get(state_name)
+def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
+    return states_dict[state_name]
 
 
 def main():
     new_directory = "C:/Users/matth/data/processed"
     os.chdir(new_directory)
-    case_data = pd.read_csv('tidy_data2.csv')
+    case_data = pd.read_csv("tidy_data2.csv")
 
-    laws_tuple = tuple(case_data['primary_law'].unique())
-    # pip install branca==0.3.1 is necessary to trust Notebook
+    laws_tuple = tuple(case_data["primary_law"].unique())
+
     # CLEAN DATA
-    case_data['county'] = case_data['county'].str.replace('COUNTY', '')
-    case_data = case_data[case_data['county'] != "-- NOT DEFINED --"]
+    case_data["county"] = case_data["county"].str.replace("COUNTY", "")
+    case_data = case_data[case_data["county"] != "-- NOT DEFINED --"]
 
     def validate_lat_lon_us(data, lat_column, lon_column):
         min_lat, max_lat = 24.396308, 49.384358
         min_lon, max_lon = -125.000000, -66.934570
-
         invalid_rows = []
 
         for index, row in data.iterrows():
             lat = row[lat_column]
             lon = row[lon_column]
-
             if not (min_lat <= lat <= max_lat) or not (min_lon <= lon <= max_lon):
                 invalid_rows.append(index)
-
         return data.drop(invalid_rows)
 
-    # 'LATITUDE_MEASURE' and 'LONGITUDE_MEASURE' are the columns containing latitude and longitude values
-    case_data = validate_lat_lon_us(case_data, 'lat', 'long')
+    # "LATITUDE_MEASURE" and "LONGITUDE_MEASURE" are the columns containing latitude and longitude values
+    case_data = validate_lat_lon_us(case_data, "lat", "long")
 
-    case_data = case_data[case_data['black_population_ratio'] <= 1]
-    case_data = case_data[case_data['white_population_ratio'] <= 1]
-    case_data = case_data[case_data['low_income_ratio'] <= 1]
+    case_data = case_data[case_data["black_population_ratio"] <= 1]
+    case_data = case_data[case_data["white_population_ratio"] <= 1]
+    case_data = case_data[case_data["low_income_ratio"] <= 1]
     case_data = case_data.dropna(subset=["hispanic_population_ratio"])
     case_data = case_data.dropna(subset=["asian_population_ratio"])
     case_data = case_data.dropna(subset=["american_indian_population_ratio"])
@@ -377,15 +342,14 @@ def main():
     case_data = case_data[case_data["asian_population_ratio"] <= 1]
     case_data = case_data[case_data["american_indian_population_ratio"] <= 1]
 
-    case_data["other"] = 1 - (case_data["hispanic_population_ratio"] + case_data["asian_population_ratio"] + case_data["american_indian_population_ratio"] +
-                              case_data['black_population_ratio'] + case_data['white_population_ratio'])
+    case_data["other"] = 1 - (case_data["hispanic_population_ratio"] + case_data["asian_population_ratio"] + case_data["american_indian_population_ratio"] + case_data["black_population_ratio"] + case_data["white_population_ratio"])
     case_data = case_data[case_data["other"] >= 0]
 
     choice = st.selectbox("Display Choice", ("Demographics and Fine Predictor", "Heat Map"))
 
     if choice == "Demographics and Fine Predictor":
-        APP_TITLE = 'DEMOGRAPHICS ANALYSIS'
-        APP_SUB_TITLE = 'Source: ECHO Data'
+        APP_TITLE = "DEMOGRAPHICS ANALYSIS"
+        APP_SUB_TITLE = "Source: ECHO Data"
 
         st.title(APP_TITLE)
         st.caption(APP_SUB_TITLE)
@@ -406,12 +370,12 @@ def main():
         # We created selectbox for categorical columns and used slider numerical values ,specified range and step
 
         case_data = case_data.dropna()
-        column_tuple = tuple(case_data['state'].unique())
+        column_tuple = tuple(case_data["state"].unique())
         column_tuple = sorted(column_tuple)
 
         model_linear(case_data, test, demographic)
 
-        st.markdown(' '
+        st.markdown(" "
                     "### EPA Fine Predictor")
         st.markdown("Enter in the values below to predict the EPA dollar fine amount.")
 
@@ -440,31 +404,31 @@ def main():
         ratio_hispanic_population = st.slider("What is the ratio of the Hispanic population?", 0.0, max_slider_value_hispanic, step=0.1)
 
         model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population)
+
     if choice == "Heat Map":
-        APP_TITLE = 'EPA at the County Level'
-        APP_SUB_TITLE = 'Source: ECHO Data'
+        APP_TITLE = "EPA at the County Level"
+        APP_SUB_TITLE = "Source: ECHO Data"
 
         st.title(APP_TITLE)
         st.caption(APP_SUB_TITLE)
 
-        selected_cols = ['white_population_ratio', 'black_population_ratio', 'hispanic_population_ratio',
-                         'asian_population_ratio', 'american_indian_population_ratio', 'other', 'lat', 'long', 'fed_penalty_assessed_amt']
-        grouped_data = case_data.groupby(['state', 'county'])[selected_cols].mean().reset_index()
-        grouped_data_low_income = case_data.groupby(['state', 'county'])['low_income_ratio'].mean().reset_index()
-        grouped_data_low_income['other_income_ratio'] = 1 - grouped_data_low_income['low_income_ratio']
+        selected_cols = ["white_population_ratio", "black_population_ratio", "hispanic_population_ratio", "asian_population_ratio", "american_indian_population_ratio", "other", "lat", "long", "fed_penalty_assessed_amt"]
+        grouped_data = case_data.groupby(["state", "county"])[selected_cols].mean().reset_index()
+        grouped_data_low_income = case_data.groupby(["state", "county"])["low_income_ratio"].mean().reset_index()
+        grouped_data_low_income["other_income_ratio"] = 1 - grouped_data_low_income["low_income_ratio"]
 
-        grouped_data_metrics = case_data.groupby(['state', 'county', 'primary_law'])['fed_penalty_assessed_amt'].mean().reset_index()
+        grouped_data_metrics = case_data.groupby(["state", "county", "primary_law"])["fed_penalty_assessed_amt"].mean().reset_index()
 
-        # Merge the penalty_counts_df and grouped_data on 'state', 'county', and 'primary_law'
+        # Merge the penalty_counts_df and grouped_data on "state", "county", and "primary_law"
         merged_data = grouped_data
-        merged_data['full_state'] = merged_data['state'].apply(full_name)
+        merged_data["full_state"] = merged_data["state"].apply(full_name)
         state = display_map(merged_data)
-        cleaned_data = merged_data[['state', 'county']]
-        cleaned_data = cleaned_data.drop_duplicates(subset=['state', 'county'])
-        counties_in_state = tuple(cleaned_data[cleaned_data['state'] == state]['county'].unique())
+        cleaned_data = merged_data[["state", "county"]]
+        cleaned_data = cleaned_data.drop_duplicates(subset=["state", "county"])
+        counties_in_state = tuple(cleaned_data[cleaned_data["state"] == state]["county"].unique())
         county = st.selectbox("Which County?", (counties_in_state))
         display_pie_chart(merged_data, grouped_data_low_income, state, county)
-        st.subheader(f'EPA Data for {county} County in the State of {state}')
+        st.subheader(f"EPA Data for {county} County in the State of {state}")
         primary_law = st.selectbox("Which Primary Law?", (laws_tuple))
         display_facts(grouped_data_metrics, state, county, primary_law, "Average Penalty")
         plot_count_of_violations_and_penalty_value(case_data)

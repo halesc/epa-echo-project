@@ -16,7 +16,8 @@ URL3 = "https://echo.epa.gov/files/echodownloads/echo_demographics.zip"
 URL4 = "https://echo.epa.gov/files/echodownloads/npdes_downloads.zip"
 URL5 = "https://echo.epa.gov/files/echodownloads/npdes_eff_downloads.zip"
 URL6 = "https://echo.epa.gov/files/echodownloads/case_downloads.zip"
-zip_urls = [URL1, URL2, URL3, URL4, URL5, URL6]
+ZIP_URLS = [URL1, URL2, URL3, URL4, URL5, URL6]
+WRITE_PATH = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
 
 
 def download_and_extract_zip(url, destination_folder):
@@ -31,19 +32,17 @@ def download_and_extract_zip(url, destination_folder):
         zip_file.extractall(destination_folder)
 
 
-# Generate file path and lib folder.
-write_path = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
+# Generate folder.
 try:
-    os.mkdir(write_path)
+    os.mkdir(WRITE_PATH)
 except FileExistsError:
     pass
-
 # Download and extract the data.
 # TODO: Check for a way to get less tables vs all.
 print("Downloading and extracting zip files...")
-for url in zip_urls:
+for url in ZIP_URLS:
     try:
-        download_and_extract_zip(url, write_path)
+        download_and_extract_zip(url, WRITE_PATH)
     except Exception as e:
         print(f"Error: {str(e)} - {url} ")
     print(f"Completed: {url}")

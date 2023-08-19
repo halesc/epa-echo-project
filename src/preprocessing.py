@@ -10,22 +10,20 @@ import pandas as pd
 
 DT = datetime.datetime.now()
 ECHO_LOC = "lib/raw/"
-
-# Generate file paths and directories.
-read_path = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
-write_path = read_path[:-len(ECHO_LOC)] + "lib/processed/"
+READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
+WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + "lib/processed/"
 
 try:
-    os.mkdir(write_path)
+    os.mkdir(WRITE_PATH)
 except FileExistsError:
     pass
 
 # Read in data.
 facilities = pd.read_csv(
-    read_path + "ICIS-AIR_FACILITIES.csv",
+    READ_PATH + "ICIS-AIR_FACILITIES.csv",
     usecols=["REGISTRY_ID", "PGM_SYS_ID", "AIR_POLLUTANT_CLASS_CODE", "AIR_POLLUTANT_CLASS_DESC"])
 programs = pd.read_csv(
-    read_path + "ICIS-AIR_PROGRAMS.csv",
+    READ_PATH + "ICIS-AIR_PROGRAMS.csv",
     usecols=["PGM_SYS_ID", "PROGRAM_CODE", "PROGRAM_DESC"])
 
 facilities = facilities.merge(programs, on="PGM_SYS_ID", how="left")
@@ -58,10 +56,11 @@ facilities = facilities.rename(
     columns={"CAASIP": "caasip", "CAAMACT": "caamact", "CAANSPS": "caansps", "CAATVP": "caatvp", "CAAGACTM": "caagactm", "OTHER": "other"})
 
 # Write to csv.
-facilities.to_csv(write_path + f"icis-air_facilities_{DT.year}{DT.month}{DT.day}.csv")
-facilities.to_csv(write_path + "icis-air_facilities.csv")
+facilities.to_csv(WRITE_PATH + "icis-air_facilities.csv")
 
 # Delete dataframes to free up memory.
+air = facilities
+
 del facilities
 del programs
 gc.collect()
@@ -70,10 +69,10 @@ print("Completed: air facilities")
 
 # Read in data.
 facilities = pd.read_csv(
-    read_path + "ICIS_FACILITIES.csv",
+    READ_PATH + "ICIS_FACILITIES.csv",
     usecols=["NPDES_ID", "FACILITY_UIN"]).rename(columns={"FACILITY_UIN": "REGISTRY_ID"})
 programs = pd.read_csv(
-    read_path + "ICIS_PERMITS.csv",
+    READ_PATH + "ICIS_PERMITS.csv",
     usecols=["EXTERNAL_PERMIT_NMBR", "MAJOR_MINOR_STATUS_FLAG", "RAD_WBD_HUC12S"]).rename(columns={"EXTERNAL_PERMIT_NMBR": "NPDES_ID"})
 
 # Merge the two dataframes.
@@ -100,10 +99,11 @@ facilities = facilities.groupby("registry_id").agg(
     {"rad_wbd_huc12s": lambda x: x.value_counts().index[0]}).reset_index()
 
 # Write to csv.
-facilities.to_csv(write_path + f"icis-npdes_facilities_{DT.year}{DT.month}{DT.day}.csv")
-facilities.to_csv(write_path + "icis-npdes_facilities.csv")
+facilities.to_csv(WRITE_PATH + "icis-npdes_facilities.csv")
 
 # Delete dataframes to free up memory.
+npdes = facilities
+
 del facilities
 del programs
 gc.collect()
@@ -112,10 +112,10 @@ print("Completed: npdes facilities")
 
 # Read in the data.
 facilities = pd.read_csv(
-    read_path + "FRS_FACILITIES.csv",
+    READ_PATH + "FRS_FACILITIES.csv",
     usecols=["REGISTRY_ID", "FAC_STATE", "FAC_COUNTY", "FAC_EPA_REGION", "LATITUDE_MEASURE", "LONGITUDE_MEASURE"])
 demographics = pd.read_csv(
-    read_path + "ECHO_DEMOGRAPHICS.csv",
+    READ_PATH + "ECHO_DEMOGRAPHICS.csv",
     usecols=["REGISTRY_ID", "RADIUS_OF_AREA", "LOWINCOME", "ACS_POPULATION", "WHITE_POPULATION", "AFRICAN_AMERICAN_POPULATION", "HISPANIC_ORIGIN_POPULATION", "ASIAN_PACIFIC_ISLANDER_POP", "AMERICAN_INDIAN_POPULATION"])
 
 # Merge the two dataframes.
@@ -161,27 +161,28 @@ facilities = facilities[facilities['american_indian_population_ratio'] <= 1]
 facilities = facilities.drop(columns=["low_income", "acs_population", "radius", "american_indian_population", "asian_pacific_islander_population", "hispanic_origin_population", "african_american_population", "white_population"])
 
 # Write to csv.
-facilities.to_csv(write_path + f"frs_facilities_{DT.year}{DT.month}{DT.day}.csv")
-facilities.to_csv(write_path + "frs_facilities.csv")
+facilities.to_csv(WRITE_PATH + "frs_facilities.csv")
 
 # Delete dataframes to free up memory.
-del facilities
+frs = facilities
+
 del demographics
+del facilities
 gc.collect()
 
 print("Completed: frs facilities")
 
 # Read in the data.
 facilities = pd.read_csv(
-    read_path + "CASE_ENFORCEMENT_CONCLUSION_FACILITIES.csv",
+    READ_PATH + "CASE_ENFORCEMENT_CONCLUSION_FACILITIES.csv",
     usecols=["FACILITY_UIN", "CASE_NUMBER"]).rename(columns={"FACILITY_UIN": "REGISTRY_ID"})
 
 enforcements_1 = pd.read_csv(
-    read_path + "CASE_ENFORCEMENT_CONCLUSIONS.csv",
+    READ_PATH + "CASE_ENFORCEMENT_CONCLUSIONS.csv",
     usecols=["CASE_NUMBER", "ENF_CONCLUSION_ID", "ENF_CONCLUSION_ACTION_CODE", "SETTLEMENT_FY", "PRIMARY_LAW", "FED_PENALTY_ASSESSED_AMT", "STATE_LOCAL_PENALTY_AMT", "SEP_AMT", "COMPLIANCE_ACTION_COST", "COST_RECOVERY_AWARDED_AMT"])
 
 enforcements_2 = pd.read_csv(
-    read_path + "CASE_ENFORCEMENTS.csv",
+    READ_PATH + "CASE_ENFORCEMENTS.csv",
     usecols=["CASE_NUMBER", "FISCAL_YEAR", "ENF_OUTCOME_CODE", "VOLUNTARY_SELF_DISCLOSURE_FLAG"])
 
 # Merge the two dataframes.
@@ -219,14 +220,12 @@ enforcements = enforcements.groupby("registry_id").agg(
     {"primary_law": "first", "enf_outcome_code": "first", "self_disclosure_frequency": "first", "penalty_frequency": "first", "fed_penalty_assessed_amt": "sum", "state_local_penalty_amt": "sum", "sep_amt": "sum", "compliance_action_cost": "sum", "cost_recovery_awarded_amt": "sum"}).reset_index()
 
 # Write to csv.
-enforcements.to_csv(write_path + f"enforcements_{DT.year}{DT.month}{DT.day}.csv")
-enforcements.to_csv(write_path + "enforcements.csv")
+enforcements.to_csv(WRITE_PATH + "enforcements.csv")
 
 # Delete dataframes to free up memory.
 del facilities
 del enforcements_1
 del enforcements_2
-del enforcements
 gc.collect()
 
 print("Completed: enforcements")
@@ -261,13 +260,37 @@ legislators = legislators.rename(
     columns={"Democrat": "democrat", "Republican": "republican", "Independent": "independent", "Libertarian": "libertarian"})
 
 # Write to csv.
-legislators.to_csv(write_path + f"legislators_{DT.year}{DT.month}{DT.day}.csv")
-legislators.to_csv(write_path + "legislators.csv")
+legislators.to_csv(WRITE_PATH + "legislators.csv")
 
 # Delete dataframes to free up memory.
 del current
 del historical
-del legislators
 gc.collect()
 
 print("Completed: legislators")
+
+df = enforcements.merge(frs, how="left", on="registry_id").merge(air, how="left", on="registry_id").merge(npdes, how="left", on="registry_id").merge(legislators, how="left", on="state").dropna(subset=["state"])
+
+# Fill nan for columns where the facility was not present in the other datasets where it makes sense to have the value 0.
+df["democrat"] = df["democrat"].fillna(0)
+df["republican"] = df["republican"].fillna(0)
+df["libertarian"] = df["libertarian"].fillna(0)
+df["independent"] = df["independent"].fillna(0)
+df["caasip"] = df["caasip"].fillna(0)
+df["caamact"] = df["caamact"].fillna(0)
+df["caatvp"] = df["caatvp"].fillna(0)
+df["caansps"] = df["caansps"].fillna(0)
+df["caagactm"] = df["caagactm"].fillna(0)
+df["other"] = df["other"].fillna(0)
+
+# Write to csv.
+df.to_csv(WRITE_PATH + "tidy_data.csv")
+df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv")
+print("Completed: tidy_data.csv")
+
+del enforcements
+del frs
+del air
+del npdes
+del df
+gc.collect()
