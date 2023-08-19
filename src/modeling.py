@@ -14,7 +14,6 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "lib/processed/")
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "lib/models/")
-
 case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
 
 # Remove known outliers from the dataset.
@@ -30,17 +29,18 @@ original_to_encoded = {v: k for k, v in encoded_to_original.items()}
 
 X = case_details_demographics_subset[["black_population_ratio", "white_population_ratio", "hispanic_population_ratio", "asian_population_ratio", "american_indian_population_ratio", "low_income_ratio", "state"]]
 y = case_details_demographics_subset["fed_penalty_assessed_amt"]
+columns = X.columns
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Create base esitmator. This is the model that will be used to train the BaggingRegressor.
+# Create base estimator. This is the model that will be used to train the BaggingRegressor.
 base_estimator = RandomForestRegressor(n_estimators=10, random_state=42)
 
 # TODO: Add param tuning of base estimator.
 
 # Create the BaggingRegressor using the base estimator
-bagging_model = BaggingRegressor(base_estimator=base_estimator, n_estimators=10, random_state=42)
+bagging_model = BaggingRegressor(estimator=base_estimator, n_estimators=10, random_state=42)
 
 # Fit the BaggingRegressor to the training data
 bagging_model.fit(X_train, y_train)

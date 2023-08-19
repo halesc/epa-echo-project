@@ -23,6 +23,7 @@ STATES_DICT = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR
 FILE_PATH = os.path.dirname(os.path.abspath(""))
 RF_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "rf_model.pkl")
 LN_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "ln_model.pkl")
+DATA_PATH = os.path.join(FILE_PATH, "lib/processed", "tidy_data.csv")
 
 
 # TODO: Relocate helper functions to a separate file.
@@ -247,7 +248,6 @@ def display_pie_chart(merged_data, grouped_data_low_income, state, county):
     fig2.set_facecolor("#f0f0f0")
 
     # Display the income ratio pie chart in Streamlit
-
     col1, col2 = st.columns(2)
     with col1:
         st.pyplot(fig)
@@ -306,9 +306,8 @@ def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
 
 
 def main():
-    new_directory = "C:/Users/matth/data/processed"
-    os.chdir(new_directory)
-    case_data = pd.read_csv("tidy_data2.csv")
+    # Load data
+    case_data = pd.read_csv(DATA_PATH)
 
     laws_tuple = tuple(case_data["primary_law"].unique())
 
@@ -364,7 +363,7 @@ def main():
         test = st.radio("Which Analysis?", ("Dollar Amount Fines", "Frequency of Fines"))
 
         # We called back our models created before
-        model = pickle.load(open("rf_model", "rb"))
+        model = pickle.load(open(RF_MODEL_PATH, "rb"))
 
         # We use selectbox method and append our models to give a choice clients
         # We created selectbox for categorical columns and used slider numerical values ,specified range and step
