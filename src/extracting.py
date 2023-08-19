@@ -9,7 +9,7 @@ import requests
 import zipfile
 
 
-ECHO_LOC = 'lib/raw/'
+ECHO_LOC = 'app/lib/raw/'
 URL1 = "https://echo.epa.gov/files/echodownloads/ICIS-AIR_downloads.zip"
 URL2 = "https://echo.epa.gov/files/echodownloads/frs_downloads.zip"
 URL3 = "https://echo.epa.gov/files/echodownloads/echo_demographics.zip"

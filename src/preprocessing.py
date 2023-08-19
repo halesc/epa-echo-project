@@ -9,9 +9,9 @@ import pandas as pd
 
 
 DT = datetime.datetime.now()
-ECHO_LOC = "lib/raw/"
+ECHO_LOC = "app/lib/raw/"
 READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
-WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + "lib/processed/"
+WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + "app/lib/processed/"
 
 try:
     os.mkdir(WRITE_PATH)

@@ -1,8 +1,7 @@
 *.DS_Store
+*.md
 .git
-.gitignore
 .cache
 logs/
 lib/raw/**
-lib/processed/**
 src/__pycache__/**
