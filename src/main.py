@@ -62,8 +62,6 @@ def model_linear(case_data, test, demographic):
         st.error("Invalid demographic selection.")
         return
     if test == "Frequency of Fines":
-        case_data[demographic_column] = case_data[demographic_column]
-        case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"]
         case_data = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].count().reset_index()
         case_data_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].count().reset_index()
         case_data = case_data[case_data[demographic_column] != 0]
@@ -88,7 +86,6 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model.intercept_, 2))
 
-    case_data[demographic_column] = case_data[demographic_column]
     case_data_avg = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
@@ -136,7 +133,6 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model2.intercept_, 2))
 
-    case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"]
     case_data_avg_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
