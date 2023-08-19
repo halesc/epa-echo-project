@@ -4,4 +4,4 @@
 .cache
 logs/
 lib/raw/**
-src/__pycache__/**
+src/__pycache__/

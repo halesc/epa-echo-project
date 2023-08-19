@@ -10,7 +10,7 @@ import pandas as pd
 
 DT = datetime.datetime.now()
 ECHO_LOC = "app/lib/raw/"
-READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
+READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), ECHO_LOC)
 WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + "app/lib/processed/"
 
 try:
@@ -128,32 +128,32 @@ facilities = facilities.rename(
 # Analysis done on radius of area 3.
 facilities = facilities[facilities["radius"] == 3]
 
-facilities["low_income_ratio"] = facilities["low_income"] / facilities["acs_population"]
+facilities["low_income_ratio"] = round(facilities["low_income"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["low_income_ratio"])
 
 # Population ratio of White people
-facilities["white_population_ratio"] = facilities["white_population"] / facilities["acs_population"]
+facilities["white_population_ratio"] = round(facilities["white_population"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["white_population_ratio"])
 # Errors in the data, removed when ACS Population is somehow smaller than the number of white people
 facilities = facilities[facilities['white_population_ratio'] <= 1]
 
 # Population ratio of Black people
-facilities["black_population_ratio"] = facilities["african_american_population"] / facilities["acs_population"]
+facilities["black_population_ratio"] = round(facilities["african_american_population"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["black_population_ratio"])
 facilities = facilities[facilities['black_population_ratio'] <= 1]
 
 # Population ratio of Hispanic people
-facilities["hispanic_population_ratio"] = facilities["hispanic_origin_population"] / facilities["acs_population"]
+facilities["hispanic_population_ratio"] = round(facilities["hispanic_origin_population"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["hispanic_population_ratio"])
 facilities = facilities[facilities['hispanic_population_ratio'] <= 1]
 
 # Population ratio of Asian people
-facilities["asian_population_ratio"] = facilities["asian_pacific_islander_population"] / facilities["acs_population"]
+facilities["asian_population_ratio"] = round(facilities["asian_pacific_islander_population"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["asian_population_ratio"])
 facilities = facilities[facilities['asian_population_ratio'] <= 1]
 
 # Population ratio of American Indian people
-facilities["american_indian_population_ratio"] = facilities["american_indian_population"] / facilities["acs_population"]
+facilities["american_indian_population_ratio"] = round(facilities["american_indian_population"] / facilities["acs_population"], 2)
 facilities = facilities.dropna(subset=["american_indian_population_ratio"])
 facilities = facilities[facilities['american_indian_population_ratio'] <= 1]
 

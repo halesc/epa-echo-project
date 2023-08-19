@@ -20,10 +20,10 @@ from sklearn.linear_model import LinearRegression
 
 # Used for state abbreviations and naming.
 STATES_DICT = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Canal Zone": "CZ", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "District of Columbia": "DC", "Florida": "FL", "Georgia": "GA", "Guam": "GU", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Puerto Rico": "PR", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virgin Islands": "VI", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
-FILE_PATH = os.path.dirname(os.path.abspath(""))
-RF_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "rf_model.pkl")
-LN_MODEL_PATH = os.path.join(FILE_PATH, "lib/models", "ln_model.pkl")
-DATA_PATH = os.path.join(FILE_PATH, "lib/processed", "tidy_data.csv")
+FILE_PATH = os.path.dirname(os.path.abspath("")[:-3])
+RF_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "rf_model.pkl")
+LN_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "ln_model.pkl")
+DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 
 
 # TODO: Relocate helper functions to a separate file.
@@ -62,8 +62,8 @@ def model_linear(case_data, test, demographic):
         st.error("Invalid demographic selection.")
         return
     if test == "Frequency of Fines":
-        case_data[demographic_column] = case_data[demographic_column].round(2)
-        case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
+        case_data[demographic_column] = case_data[demographic_column]
+        case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"]
         case_data = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].count().reset_index()
         case_data_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].count().reset_index()
         case_data = case_data[case_data[demographic_column] != 0]
@@ -88,7 +88,7 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model.intercept_, 2))
 
-    case_data[demographic_column] = case_data[demographic_column].round(2)
+    case_data[demographic_column] = case_data[demographic_column]
     case_data_avg = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
@@ -136,7 +136,7 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model2.intercept_, 2))
 
-    case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
+    case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"]
     case_data_avg_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
@@ -187,7 +187,7 @@ def display_map(merged_data):
         merged_data = merged_data[merged_data["county"] != "OAKLAND"]
     state_data = merged_data.groupby(["full_state"])["fed_penalty_assessed_amt"].mean().reset_index()
     choropleth = folium.Choropleth(
-        geo_data="us-state-boundaries.geojson",
+        geo_data="./lib/us-state-boundaries.geojson",
         data=state_data,
         columns=("full_state", "fed_penalty_assessed_amt"),
         key_on="feature.properties.name",
@@ -298,11 +298,11 @@ def plot_count_of_violations_and_penalty_value(df):
 
 def full_name(state_abbrev: str, states_dict=STATES_DICT) -> str:
     reverse_states = {v: k for k, v in states_dict.items()}
-    return reverse_states[state_abbrev]
+    return reverse_states.get(state_abbrev)
 
 
 def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
-    return states_dict[state_name]
+    return states_dict.get(state_name)
 
 
 def main():
@@ -312,7 +312,7 @@ def main():
     laws_tuple = tuple(case_data["primary_law"].unique())
 
     # CLEAN DATA
-    case_data["county"] = case_data["county"].str.replace("COUNTY", "")
+    case_data["county"] = case_data["county"].str.replace("COUNTY", "").str.strip()
     case_data = case_data[case_data["county"] != "-- NOT DEFINED --"]
 
     def validate_lat_lon_us(data, lat_column, lon_column):

@@ -12,7 +12,7 @@ from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
-READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "app/lib/processed/")
+READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "app/lib/processed/")
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "app/lib/models/")
 case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
 

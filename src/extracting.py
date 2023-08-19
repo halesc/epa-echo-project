@@ -17,7 +17,7 @@ URL4 = "https://echo.epa.gov/files/echodownloads/npdes_downloads.zip"
 URL5 = "https://echo.epa.gov/files/echodownloads/npdes_eff_downloads.zip"
 URL6 = "https://echo.epa.gov/files/echodownloads/case_downloads.zip"
 ZIP_URLS = [URL1, URL2, URL3, URL4, URL5, URL6]
-WRITE_PATH = os.path.join(os.path.dirname(os.path.abspath("")), ECHO_LOC)
+WRITE_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), ECHO_LOC)
 
 
 def download_and_extract_zip(url, destination_folder):
