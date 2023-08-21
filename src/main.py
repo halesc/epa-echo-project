@@ -13,9 +13,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-from modeling import columns
 from streamlit_folium import st_folium
-from modeling import original_to_encoded
+from sklearn.preprocessing import LabelEncoder
 from sklearn.linear_model import LinearRegression
 
 
@@ -30,6 +29,14 @@ DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 # TODO: Relocate helper functions to a separate file.
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
     # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
+    READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "app/lib/processed/")
+    case_details_demographics_subset = pd.read_csv(READ_PATH + "tidy_data.csv")
+    label_encoder = LabelEncoder()
+    case_details_demographics_subset["state"] = label_encoder.fit_transform(case_details_demographics_subset["state"])
+    encoded_to_original = dict(zip(case_details_demographics_subset["state"], case_details_demographics_subset["state"]))
+    original_to_encoded = {v: k for k, v in encoded_to_original.items()}
+    X = case_details_demographics_subset[["black_population_ratio", "white_population_ratio", "hispanic_population_ratio", "asian_population_ratio", "american_indian_population_ratio", "low_income_ratio", "state"]]
+    columns = X.columns
     my_dict = {
         "State": original_to_encoded.get(state),
         "Low_Income_Ratio": ratio_low_income,

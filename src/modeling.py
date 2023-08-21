@@ -24,6 +24,8 @@ case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
 case_details_demographics = case_details_demographics[case_details_demographics["state"] != "MI"]
 case_details_demographics = case_details_demographics[case_details_demographics["fed_penalty_assessed_amt"] < 1000000]
 
+case_details_demographics_subset = case_details_demographics
+# TODO: Possibly remove this subset.
 case_details_demographics_subset = case_details_demographics.sample(frac=0.1, random_state=42)
 label_encoder = LabelEncoder()
 
