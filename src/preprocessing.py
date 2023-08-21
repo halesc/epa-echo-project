@@ -18,7 +18,7 @@ try:
 except FileExistsError:
     pass
 
-print("Starting preprocessing...", flush=True)
+print("Starting Preprocessing...", flush=True)
 # Read in data.
 facilities = pd.read_csv(
     READ_PATH + "ICIS-AIR_FACILITIES.csv",
@@ -288,7 +288,6 @@ df["other"] = df["other"].fillna(0)
 df.to_csv(WRITE_PATH + "tidy_data.csv")
 df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv")
 print("Completed preprocessing: tidy_data.csv saved to lib/processed", flush=True)
-print("** Refresh webpage to see other utility buttons. **")
 
 del enforcements
 del frs

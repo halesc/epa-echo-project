@@ -39,7 +39,7 @@ except FileExistsError:
     pass
 # Download and extract the data.
 # TODO: Check for a way to get less tables vs all.
-print("Downloading and extracting zip files...", flush=True)
+print("Downloading and Extracting Files...", flush=True)
 for url in ZIP_URLS:
     try:
         download_and_extract_zip(url, WRITE_PATH)
@@ -47,4 +47,3 @@ for url in ZIP_URLS:
         print(f"Error: {str(e)} - {url} ", flush=True)
     print(f"Completed: {url}", flush=True)
 print("Finished downloading and extracting zip files. Saved to lib/raw.", flush=True)
-print("** Refresh webpage to see other utility buttons. **")
