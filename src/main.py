@@ -29,7 +29,7 @@ DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 # TODO: Relocate helper functions to a separate file.
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
     # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
-    case_details_demographics = pd.read_csv(DATA_PATH + "tidy_data.csv")
+    case_details_demographics = pd.read_csv(DATA_PATH)
 
     # Remove known outliers from the dataset.
     case_details_demographics = case_details_demographics[case_details_demographics["state"] != "MI"]
@@ -317,6 +317,12 @@ def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
     return states_dict.get(state_name)
 
 
+def run_and_display_stdout(*cmd_with_args):
+    result = subprocess.Popen(cmd_with_args, stdout=subprocess.PIPE)
+    for line in iter(lambda: result.stdout.readline(), b""):
+        st.text(line.decode("utf-8"))
+
+
 def main():
     # Load data
     case_data = pd.read_csv(DATA_PATH)
@@ -451,9 +457,19 @@ def main():
         st.title(APP_TITLE)
         st.caption(APP_SUB_TITLE)
 
-        st.button("Extract Data", on_click=subprocess.run(["python", "app/src/extracting.py"]), help="Extracts the data from the EPA ECHO website.")
-        st.button("Transform Data", on_click=subprocess.run(["python", "app/src/preprocessing.py"]), help="Transforms the data into a format used in modeling.")
-        st.button("Train Demographic Model", on_click=subprocess.run(["python", "app/src/modeling.py"]), help="Retrains the demographic model using the most up to date data.")
+        ex_button = st.button("Extract Data", help="Extracts the data from the EPA ECHO website.")
+        if ex_button:
+            st.write("Extracting Data...")
+            st.write("Please wait, this can take upwards of 10-20 minutes.")
+            run_and_display_stdout("python", "src/extracting.py")
+
+        pp_button = st.button("Transform Data", help="Transforms the data into a format used in modeling.")
+        if pp_button:
+            run_and_display_stdout("python", "src/preprocessing.py")
+
+        md_button = st.button("Train Demographic Model", help="Retrains the demographic model using the most up to date data.")
+        if md_button:
+            run_and_display_stdout("python", "src/modeling.py")
 
 
 if __name__ == "__main__":

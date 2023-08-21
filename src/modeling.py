@@ -7,7 +7,6 @@ import os
 import pickle
 import datetime
 import pandas as pd
-import streamlit as st
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
@@ -15,7 +14,7 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 
 DT = datetime.datetime.now()
-st.write("Start Training and Testing the Model...")
+print("Start Training and Testing the Model...", flush=True)
 READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "app/lib/processed/")
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "app/lib/models/")
 case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
@@ -56,17 +55,18 @@ bagging_y_pred = bagging_model.predict(X_test)
 
 # Evaluate the model using mean squared error
 mse_bagging = mean_squared_error(y_test, bagging_y_pred)
-st.write("Mean Squared Error (Bagging):", mse_bagging)
+print(f"Mean Squared Error (Bagging): {mse_bagging}", flush=True)
 
 # Calculate R-squared (Coefficient of Determination)
 r2_bagging = r2_score(y_test, bagging_y_pred)
-st.write("R-squared (Coefficient of Determination):", r2_bagging)
+print(f"R-squared (Coefficient of Determination): {r2_bagging}", flush=True)
 
 # Calculate Mean Absolute Error (MAE)
 mae_bagging = mean_absolute_error(y_test, bagging_y_pred)
-st.write("Mean Absolute Error (Bagging):", mae_bagging)
+print(f"Mean Absolute Error (Bagging): {mae_bagging}", flush=True)
 
 # TODO: Add versioning of models.
 pickle.dump(bagging_model, open(MODEL_PATH + "rf_model.pkl", "wb"))
 pickle.dump(bagging_model, open(MODEL_PATH + f"rf_model_{DT.year}{DT.month}{DT.day}.pkl", "wb"))
-st.write("Completed Training: Model Saved to lib/models/")
+print("Completed Training: Model Saved to lib/models/", flush=True)
+print("** Refresh webpage to see other utility buttons. **")

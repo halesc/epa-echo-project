@@ -6,7 +6,6 @@ import os
 import gc
 import datetime
 import pandas as pd
-import streamlit as st
 
 
 DT = datetime.datetime.now()
@@ -19,7 +18,7 @@ try:
 except FileExistsError:
     pass
 
-st.write("Starting preprocessing...")
+print("Starting preprocessing...", flush=True)
 # Read in data.
 facilities = pd.read_csv(
     READ_PATH + "ICIS-AIR_FACILITIES.csv",
@@ -67,7 +66,7 @@ del facilities
 del programs
 gc.collect()
 
-st.write("Completed: air facilities")
+print("Completed: air facilities", flush=True)
 
 # Read in data.
 facilities = pd.read_csv(
@@ -110,7 +109,7 @@ del facilities
 del programs
 gc.collect()
 
-st.write("Completed: npdes facilities")
+print("Completed: npdes facilities", flush=True)
 
 # Read in the data.
 facilities = pd.read_csv(
@@ -172,7 +171,7 @@ del demographics
 del facilities
 gc.collect()
 
-st.write("Completed: frs facilities")
+print("Completed: frs facilities", flush=True)
 
 # Read in the data.
 facilities = pd.read_csv(
@@ -230,7 +229,7 @@ del enforcements_1
 del enforcements_2
 gc.collect()
 
-st.write("Completed: enforcements")
+print("Completed: enforcements", flush=True)
 
 # Read in the data.
 current = pd.read_json("https://theunitedstates.io/congress-legislators/legislators-current.json")
@@ -269,7 +268,7 @@ del current
 del historical
 gc.collect()
 
-st.write("Completed: legislators")
+print("Completed: legislators", flush=True)
 
 df = enforcements.merge(frs, how="left", on="registry_id").merge(air, how="left", on="registry_id").merge(npdes, how="left", on="registry_id").merge(legislators, how="left", on="state").dropna(subset=["state"])
 
@@ -288,7 +287,8 @@ df["other"] = df["other"].fillna(0)
 # Write to csv.
 df.to_csv(WRITE_PATH + "tidy_data.csv")
 df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv")
-st.write("Completed preprocessing: tidy_data.csv saved to lib/processed")
+print("Completed preprocessing: tidy_data.csv saved to lib/processed", flush=True)
+print("** Refresh webpage to see other utility buttons. **")
 
 del enforcements
 del frs

@@ -7,7 +7,6 @@ import io
 import os
 import requests
 import zipfile
-import streamlit as st
 
 
 ECHO_LOC = 'app/lib/raw/'
@@ -40,11 +39,12 @@ except FileExistsError:
     pass
 # Download and extract the data.
 # TODO: Check for a way to get less tables vs all.
-st.write("Downloading and extracting zip files...")
+print("Downloading and extracting zip files...", flush=True)
 for url in ZIP_URLS:
     try:
         download_and_extract_zip(url, WRITE_PATH)
     except Exception as e:
-        st.write(f"Error: {str(e)} - {url} ")
-    st.write(f"Completed: {url}")
-st.write("Finished downloading and extracting zip files. Saved to lib/raw.")
+        print(f"Error: {str(e)} - {url} ", flush=True)
+    print(f"Completed: {url}", flush=True)
+print("Finished downloading and extracting zip files. Saved to lib/raw.", flush=True)
+print("** Refresh webpage to see other utility buttons. **")
