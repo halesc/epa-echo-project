@@ -6,6 +6,7 @@ import os
 import gc
 import datetime
 import pandas as pd
+import streamlit as st
 
 
 DT = datetime.datetime.now()
@@ -18,6 +19,7 @@ try:
 except FileExistsError:
     pass
 
+st.write("Starting preprocessing...")
 # Read in data.
 facilities = pd.read_csv(
     READ_PATH + "ICIS-AIR_FACILITIES.csv",
@@ -65,7 +67,7 @@ del facilities
 del programs
 gc.collect()
 
-print("Completed: air facilities")
+st.write("Completed: air facilities")
 
 # Read in data.
 facilities = pd.read_csv(
@@ -108,7 +110,7 @@ del facilities
 del programs
 gc.collect()
 
-print("Completed: npdes facilities")
+st.write("Completed: npdes facilities")
 
 # Read in the data.
 facilities = pd.read_csv(
@@ -170,7 +172,7 @@ del demographics
 del facilities
 gc.collect()
 
-print("Completed: frs facilities")
+st.write("Completed: frs facilities")
 
 # Read in the data.
 facilities = pd.read_csv(
@@ -228,7 +230,7 @@ del enforcements_1
 del enforcements_2
 gc.collect()
 
-print("Completed: enforcements")
+st.write("Completed: enforcements")
 
 # Read in the data.
 current = pd.read_json("https://theunitedstates.io/congress-legislators/legislators-current.json")
@@ -267,7 +269,7 @@ del current
 del historical
 gc.collect()
 
-print("Completed: legislators")
+st.write("Completed: legislators")
 
 df = enforcements.merge(frs, how="left", on="registry_id").merge(air, how="left", on="registry_id").merge(npdes, how="left", on="registry_id").merge(legislators, how="left", on="state").dropna(subset=["state"])
 
@@ -286,7 +288,7 @@ df["other"] = df["other"].fillna(0)
 # Write to csv.
 df.to_csv(WRITE_PATH + "tidy_data.csv")
 df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv")
-print("Completed: tidy_data.csv")
+st.write("Completed preprocessing: tidy_data.csv saved to lib/processed")
 
 del enforcements
 del frs

@@ -8,6 +8,7 @@ user"s input.
 import os
 import pickle
 import folium
+import subprocess
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -340,7 +341,7 @@ def main():
     case_data["other"] = 1 - (case_data["hispanic_population_ratio"] + case_data["asian_population_ratio"] + case_data["american_indian_population_ratio"] + case_data["black_population_ratio"] + case_data["white_population_ratio"])
     case_data = case_data[case_data["other"] >= 0]
 
-    choice = st.selectbox("Display Choice", ("Demographics and Fine Predictor", "Heat Map"))
+    choice = st.selectbox("Display Choice", ("Utilities", "Demographics and Fine Predictor", "Heat Map"))
 
     if choice == "Demographics and Fine Predictor":
         APP_TITLE = "DEMOGRAPHICS ANALYSIS"
@@ -427,6 +428,17 @@ def main():
         primary_law = st.selectbox("Which Primary Law?", (laws_tuple))
         display_facts(grouped_data_metrics, state, county, primary_law, "Average Penalty")
         plot_count_of_violations_and_penalty_value(case_data)
+
+    if choice == "Utilities":
+        APP_TITLE = "Processing Utilities"
+        APP_SUB_TITLE = "Here new data can be extracted and transformed, as well as models retrained."
+
+        st.title(APP_TITLE)
+        st.caption(APP_SUB_TITLE)
+
+        st.button("Extract Data", on_click=subprocess.run(["python", "src/data/extract.py"]), help="Extracts the data from the EPA ECHO website.")
+        st.button("Transform Data", on_click=subprocess.run(["python", "src/data/transform.py"]), help="Transforms the data into a format used in modeling.")
+        st.button("Train Demographic Model", on_click=subprocess.run(["python", "src/models/train.py"]), help="Retrains the demographic model using the most up to date data.")
 
 
 if __name__ == "__main__":
