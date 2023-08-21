@@ -436,9 +436,9 @@ def main():
         st.title(APP_TITLE)
         st.caption(APP_SUB_TITLE)
 
-        st.button("Extract Data", on_click=subprocess.run(["python", "src/data/extract.py"]), help="Extracts the data from the EPA ECHO website.")
-        st.button("Transform Data", on_click=subprocess.run(["python", "src/data/transform.py"]), help="Transforms the data into a format used in modeling.")
-        st.button("Train Demographic Model", on_click=subprocess.run(["python", "src/models/train.py"]), help="Retrains the demographic model using the most up to date data.")
+        st.button("Extract Data", on_click=subprocess.run(["python", "src/extract.py"]), help="Extracts the data from the EPA ECHO website.")
+        st.button("Transform Data", on_click=subprocess.run(["python", "src/transform.py"]), help="Transforms the data into a format used in modeling.")
+        st.button("Train Demographic Model", on_click=subprocess.run(["python", "src/train.py"]), help="Retrains the demographic model using the most up to date data.")
 
 
 if __name__ == "__main__":
