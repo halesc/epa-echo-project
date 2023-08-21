@@ -29,14 +29,23 @@ DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 # TODO: Relocate helper functions to a separate file.
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
     # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
-    READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "app/lib/processed/")
-    case_details_demographics_subset = pd.read_csv(READ_PATH + "tidy_data.csv")
+    case_details_demographics = pd.read_csv(DATA_PATH + "tidy_data.csv")
+
+    # Remove known outliers from the dataset.
+    case_details_demographics = case_details_demographics[case_details_demographics["state"] != "MI"]
+    case_details_demographics = case_details_demographics[case_details_demographics["fed_penalty_assessed_amt"] < 1000000]
+
+    # TODO: Possibly remove this subset.
+    case_details_demographics_subset = case_details_demographics.sample(frac=0.1, random_state=42)
     label_encoder = LabelEncoder()
+
     case_details_demographics_subset["state"] = label_encoder.fit_transform(case_details_demographics_subset["state"])
     encoded_to_original = dict(zip(case_details_demographics_subset["state"], case_details_demographics_subset["state"]))
     original_to_encoded = {v: k for k, v in encoded_to_original.items()}
+
     X = case_details_demographics_subset[["black_population_ratio", "white_population_ratio", "hispanic_population_ratio", "asian_population_ratio", "american_indian_population_ratio", "low_income_ratio", "state"]]
     columns = X.columns
+
     my_dict = {
         "State": original_to_encoded.get(state),
         "Low_Income_Ratio": ratio_low_income,
@@ -45,7 +54,6 @@ def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white
         "Asian_Population_Ratio": ratio_asian_population,
         "American_Indian_Population_Ratio": ratio_american_indian_population,
         "Hispanic_Population_Ratio": ratio_hispanic_population,
-
     }
     df = pd.DataFrame.from_dict([my_dict])
     # And appended column names into column list. We need columns to use with reindex method as we mentioned before.
@@ -443,9 +451,9 @@ def main():
         st.title(APP_TITLE)
         st.caption(APP_SUB_TITLE)
 
-        st.button("Extract Data", on_click=subprocess.run(["python", "src/extracting.py"]), help="Extracts the data from the EPA ECHO website.")
-        st.button("Transform Data", on_click=subprocess.run(["python", "src/preprocessing.py"]), help="Transforms the data into a format used in modeling.")
-        st.button("Train Demographic Model", on_click=subprocess.run(["python", "src/modeling.py"]), help="Retrains the demographic model using the most up to date data.")
+        st.button("Extract Data", on_click=subprocess.run(["python", "app/src/extracting.py"]), help="Extracts the data from the EPA ECHO website.")
+        st.button("Transform Data", on_click=subprocess.run(["python", "app/src/preprocessing.py"]), help="Transforms the data into a format used in modeling.")
+        st.button("Train Demographic Model", on_click=subprocess.run(["python", "app/src/modeling.py"]), help="Retrains the demographic model using the most up to date data.")
 
 
 if __name__ == "__main__":
