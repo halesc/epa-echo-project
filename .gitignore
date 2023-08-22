@@ -9,4 +9,5 @@ lib/processed/frs_facilities.csv
 lib/processed/icis-air_facilities.csv
 lib/processed/icis-npdes_facilities.csv
 lib/processed/legislators.csv
+lib/processed/tidy_data_*
 src/__pycache__/**
