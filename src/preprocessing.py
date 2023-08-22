@@ -57,7 +57,7 @@ facilities = facilities.rename(
     columns={"CAASIP": "caasip", "CAAMACT": "caamact", "CAANSPS": "caansps", "CAATVP": "caatvp", "CAAGACTM": "caagactm", "OTHER": "other"})
 
 # Write to csv.
-facilities.to_csv(WRITE_PATH + "icis-air_facilities.csv")
+facilities.to_csv(WRITE_PATH + "icis-air_facilities.csv", index=False)
 
 # Delete dataframes to free up memory.
 air = facilities
@@ -100,7 +100,7 @@ facilities = facilities.groupby("registry_id").agg(
     {"rad_wbd_huc12s": lambda x: x.value_counts().index[0]}).reset_index()
 
 # Write to csv.
-facilities.to_csv(WRITE_PATH + "icis-npdes_facilities.csv")
+facilities.to_csv(WRITE_PATH + "icis-npdes_facilities.csv", index=False)
 
 # Delete dataframes to free up memory.
 npdes = facilities
@@ -162,7 +162,7 @@ facilities = facilities[facilities['american_indian_population_ratio'] <= 1]
 facilities = facilities.drop(columns=["low_income", "acs_population", "radius", "american_indian_population", "asian_pacific_islander_population", "hispanic_origin_population", "african_american_population", "white_population"])
 
 # Write to csv.
-facilities.to_csv(WRITE_PATH + "frs_facilities.csv")
+facilities.to_csv(WRITE_PATH + "frs_facilities.csv", index=False)
 
 # Delete dataframes to free up memory.
 frs = facilities
@@ -221,7 +221,7 @@ enforcements = enforcements.groupby("registry_id").agg(
     {"primary_law": "first", "enf_outcome_code": "first", "self_disclosure_frequency": "first", "penalty_frequency": "first", "fed_penalty_assessed_amt": "sum", "state_local_penalty_amt": "sum", "sep_amt": "sum", "compliance_action_cost": "sum", "cost_recovery_awarded_amt": "sum"}).reset_index()
 
 # Write to csv.
-enforcements.to_csv(WRITE_PATH + "enforcements.csv")
+enforcements.to_csv(WRITE_PATH + "enforcements.csv", index=False)
 
 # Delete dataframes to free up memory.
 del facilities
@@ -261,7 +261,7 @@ legislators = legislators.rename(
     columns={"Democrat": "democrat", "Republican": "republican", "Independent": "independent", "Libertarian": "libertarian"})
 
 # Write to csv.
-legislators.to_csv(WRITE_PATH + "legislators.csv")
+legislators.to_csv(WRITE_PATH + "legislators.csv", index=False)
 
 # Delete dataframes to free up memory.
 del current
@@ -285,8 +285,8 @@ df["caagactm"] = df["caagactm"].fillna(0)
 df["other"] = df["other"].fillna(0)
 
 # Write to csv.
-df.to_csv(WRITE_PATH + "tidy_data.csv")
-df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv")
+df.to_csv(WRITE_PATH + "tidy_data.csv", index=False)
+df.to_csv(WRITE_PATH + f"tidy_data_{DT.year}{DT.month}{DT.day}.csv", index=False)
 print("Completed preprocessing: tidy_data.csv saved to lib/processed", flush=True)
 
 del enforcements
