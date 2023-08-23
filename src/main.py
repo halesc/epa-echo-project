@@ -28,7 +28,7 @@ DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
     my_dict = {
-        "state": original_to_encoded.get(state),
+        "State": original_to_encoded.get(state),
         "low_income_ratio": ratio_low_income,
         "black_population_ratio": ratio_black_population,
         "white_population_ratio": ratio_white_population,
