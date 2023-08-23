@@ -9,6 +9,7 @@ import requests
 import zipfile
 
 # TODO: Add state databases.
+
 ECHO_LOC = 'app/lib/raw/'
 URL1 = "https://echo.epa.gov/files/echodownloads/ICIS-AIR_downloads.zip"
 URL2 = "https://echo.epa.gov/files/echodownloads/frs_downloads.zip"
