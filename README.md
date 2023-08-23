@@ -63,6 +63,8 @@ Section 2: County Violation Count and Penalty Assessed Value Analysis
 #### Utilities Description:
 There are three buttons here.
 
+![imageAlt text](./lib/images/6_app_utilities.png)
+
 The first button is 'Extract Data'. It links to the EPA ECHO website. This is the website where the data was pulled from. This will begin downloading the most up to date data into the /raw/ directory.
 
 The second button is 'Transform Data'. This processes the data so that the models in the application can use it to model. This will create a new file in the /processed/ directory.
