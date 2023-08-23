@@ -21,6 +21,8 @@ docker build -t epa-echo-project .
 5. Run the container. Click at port to open in web browser.
 ![imageAlt text](./lib/images/5_run_container.png)
 
+And just like that you have the application up and running in a contained environment.
+
 #### Demographic Analysis Description:
 The demographic web app is designed to show the impact of the population on penalty amounts and frequencies.
 It is broken into 3 separate sections - the first part uses linear modeling to look at the relationship of  penalty amounts and frequencies based on different racial populations. The second section is similar to the first but looks at the ratio of low income households.
