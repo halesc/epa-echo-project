@@ -1,7 +1,27 @@
 # epa-echo-project
 A repo containing a webapp that analyzes the epa echo dataset.
 
-#### Description:
+### Setup through Github
+1. Clone the repo or download the zip file. Download and install Docker Desktop from https://www.docker.com/products/docker-desktop
+![imageAlt text](./lib/images/1_repo.png)
+
+2. Unzip the application into a folder. Navigate there in command prompt / terminal. Then build the application folder aka run the below command in the folder that contains the DockerFile.
+```
+docker build -t epa-echo-project .
+
+```
+![imageAlt text](./lib/images/2_cmd_line.png)
+
+3. Run the image to start the container. Click on the run button on docker desktop.
+![imageAlt text](./lib/images/3_image.png)
+
+4. Input the proper optional settings.
+![imageAlt text](./lib/images/4_image_setup.png)
+
+5. Run the container. Click at port to open in web browser.
+![imageAlt text](./lib/images/5_run_container.png)
+
+#### Demographic Analysis Description:
 The demographic web app is designed to show the impact of the population on penalty amounts and frequencies.
 It is broken into 3 separate sections - the first part uses linear modeling to look at the relationship of  penalty amounts and frequencies based on different racial populations. The second section is similar to the first but looks at the ratio of low income households.
 Both of these relationships include coefficients to provide the viewer with a better understanding of the trend. The final section is a penalty estimator which is based on a Random Forest model using the State and demographics as features. The user can input values for the location by US State and the demographic distribution to estimate what the EPA federal penalty could be.
@@ -37,3 +57,12 @@ Section 1: Penalty Assessed Value Heat Map, Demographic and Income Ratio Data
 Section 2: County Violation Count and Penalty Assessed Value Analysis  
 
 ![imageAlt text](./lib/images/image-2.png)
+
+#### Utilities Description:
+There are three buttons here.
+
+The first button is 'Extract Data'. It links to the EPA ECHO website. This is the website where the data was pulled from. This will begin downloading the most up to date data into the /raw/ directory.
+
+The second button is 'Transform Data'. This processes the data so that the models in the application can use it to model. This will create a new file in the /processed/ directory.
+
+Finally there is a button to retrain the demographic model. Note this is usually retrained when the application is opened for the first time. This will create a new file in the /models/ directory.
