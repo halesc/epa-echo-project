@@ -44,7 +44,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 base_estimator = RandomForestRegressor(n_estimators=200, max_depth=2, max_features=0.6, min_samples_leaf=5, min_samples_split=10, bootstrap=True, random_state=45)
 
 # Create the BaggingRegressor using the base estimator
-bagging_model = BaggingRegressor(estimator=base_estimator, n_estimators=10)
+bagging_model = BaggingRegressor(estimator=base_estimator, n_estimators=10, random_state=45)
 
 # Fit the BaggingRegressor to the training data
 bagging_model.fit(X_train, y_train)
