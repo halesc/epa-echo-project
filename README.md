@@ -15,3 +15,25 @@ Section 2: Penalty Amount and Frequency Relationship by Low Income Households
 
 Section 3: EPA Penalty Estimator
 ![image](https://github.com/Mik-dot/epa-echo-project/assets/58948167/bec37049-37aa-4a1f-acc4-4420d866f091)
+
+
+#### Geographical Analysis Description: 
+
+The geographical analysis web app allows users to visually interpret and interact with geographical, assessed penalty value, penalty count by statue, demographic and income data.  
+
+It is broken into 2 separate sections –  
+
+The first section allows a user to select a state, county and statute to find an average penalty assessed value by statute chosen. It also produces a visual that shows the demographic race data and income data for the county chosen.  
+
+The second section allows the user to view multiple counties by violation count and penalty assessed value. The user selects the number of counties desired to be analyzed, then enter the county names. 
+
+#### Images: 
+Section 1: Penalty Assessed Value Heat Map, Demographic and Income Ratio Data 
+
+![image](./lib/images/image.png)
+
+![image](./lib/images/image-1.png)
+
+Section 2: County Violation Count and Penalty Assessed Value Analysis  
+
+![imageAlt text](./lib/images/image-2.png)

@@ -7,7 +7,9 @@ import gc
 import datetime
 import pandas as pd
 
-
+# TODO: If adding state databases, clearly clean and join them.
+# TODO: If above, normalize penalty by facility size.
+# TODO: Explore and possibly add compliance_action_cost to penalty.
 DT = datetime.datetime.now()
 ECHO_LOC = "app/lib/raw/"
 READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), ECHO_LOC)

@@ -8,7 +8,7 @@ import os
 import requests
 import zipfile
 
-
+# TODO: Add state databases.
 ECHO_LOC = 'app/lib/raw/'
 URL1 = "https://echo.epa.gov/files/echodownloads/ICIS-AIR_downloads.zip"
 URL2 = "https://echo.epa.gov/files/echodownloads/frs_downloads.zip"
@@ -40,6 +40,7 @@ except FileExistsError:
 # Download and extract the data.
 # TODO: Check for a way to get less tables vs all.
 print("Downloading and Extracting Files...", flush=True)
+print("This process can take a while. Please be patient.", flush=True)
 for url in ZIP_URLS:
     try:
         download_and_extract_zip(url, WRITE_PATH)

@@ -1,59 +1,41 @@
-"""
-Main module for the application. This module is responsible for starting the
-application and running the main loop. The main loop is responsible for
-displaying the main menu and calling the appropriate functions based on the
-user"s input.
-"""
 
 import os
-import pickle
-import folium
-import subprocess
-import numpy as np
-import pandas as pd
 import streamlit as st
+import pickle
+import pandas as pd
+import subprocess
 import matplotlib.pyplot as plt
-from streamlit_folium import st_folium
-from sklearn.preprocessing import LabelEncoder
+from modeling import columns
+from modeling import original_to_encoded
 from sklearn.linear_model import LinearRegression
+import numpy as np
+import folium
+from streamlit_folium import st_folium
 
+# TODO: A value is trying to be set on a copy of a slice from a DataFrame.
+# In relation to rounding the values in the dataframe.
+# TODO: App retrains at launch. Disable this and make this the only way to retrain. Add versioning.
+# TODO: Make a county risk model. Add more features to this model.
 
-# Used for state abbreviations and naming.
 STATES_DICT = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Canal Zone": "CZ", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "District of Columbia": "DC", "Florida": "FL", "Georgia": "GA", "Guam": "GU", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Puerto Rico": "PR", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virgin Islands": "VI", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
 FILE_PATH = os.path.dirname(os.path.abspath("")[:-3])
 RF_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "rf_model.pkl")
 LN_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "ln_model.pkl")
 DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
 
+# in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
 
-# TODO: Relocate helper functions to a separate file.
+
 def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population):
-    # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
-    case_details_demographics = pd.read_csv(DATA_PATH)
-
-    # Remove known outliers from the dataset.
-    case_details_demographics = case_details_demographics[case_details_demographics["state"] != "MI"]
-    case_details_demographics = case_details_demographics[case_details_demographics["fed_penalty_assessed_amt"] < 1000000]
-
-    # TODO: Possibly remove this subset.
-    case_details_demographics_subset = case_details_demographics.sample(frac=0.1, random_state=42)
-    label_encoder = LabelEncoder()
-
-    case_details_demographics_subset["state"] = label_encoder.fit_transform(case_details_demographics_subset["state"])
-    encoded_to_original = dict(zip(case_details_demographics_subset["state"], case_details_demographics_subset["state"]))
-    original_to_encoded = {v: k for k, v in encoded_to_original.items()}
-
-    X = case_details_demographics_subset[["black_population_ratio", "white_population_ratio", "hispanic_population_ratio", "asian_population_ratio", "american_indian_population_ratio", "low_income_ratio", "state"]]
-    columns = X.columns
-
     my_dict = {
-        "State": original_to_encoded.get(state),
-        "Low_Income_Ratio": ratio_low_income,
-        "Black_Population_Ratio": ratio_black_population,
-        "White_Population_Ratio": ratio_white_population,
-        "Asian_Population_Ratio": ratio_asian_population,
-        "American_Indian_Population_Ratio": ratio_american_indian_population,
-        "Hispanic_Population_Ratio": ratio_hispanic_population,
+        "state": original_to_encoded.get(state),
+        "low_income_ratio": ratio_low_income,
+        "black_population_ratio": ratio_black_population,
+        "white_population_ratio": ratio_white_population,
+        "asian_population_ratio": ratio_asian_population,
+        "american_indian_population_ratio": ratio_american_indian_population,
+        "hispanic_population_ratio": ratio_hispanic_population,
+
     }
     df = pd.DataFrame.from_dict([my_dict])
     # And appended column names into column list. We need columns to use with reindex method as we mentioned before.
@@ -66,7 +48,11 @@ def model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white
 
 
 def model_linear(case_data, test, demographic):
-    dict_race = {"White": "white_population_ratio", "Black": "black_population_ratio", "Asian": "asian_population_ratio", "American Indian": "american_indian_population_ratio", "Hispanic": "hispanic_population_ratio"}
+    dict_race = {"White": "white_population_ratio",
+                 "Black": "black_population_ratio",
+                 "Asian": "asian_population_ratio",
+                 "American Indian": "american_indian_population_ratio",
+                 "Hispanic": "hispanic_population_ratio"}
 
     demographic_column = dict_race.get(demographic)
 
@@ -77,7 +63,10 @@ def model_linear(case_data, test, demographic):
     if demographic_column is None:
         st.error("Invalid demographic selection.")
         return
+
     if test == "Frequency of Fines":
+        case_data[demographic_column] = case_data[demographic_column].round(2)
+        case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
         case_data = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].count().reset_index()
         case_data_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].count().reset_index()
         case_data = case_data[case_data[demographic_column] != 0]
@@ -102,6 +91,7 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model.intercept_, 2))
 
+    case_data[demographic_column] = case_data[demographic_column].round(2)
     case_data_avg = case_data.groupby(demographic_column)["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
@@ -149,6 +139,7 @@ def model_linear(case_data, test, demographic):
     with col2:
         st.metric("Intercept:", round(model2.intercept_, 2))
 
+    case_data_2["low_income_ratio"] = case_data_2["low_income_ratio"].round(2)
     case_data_avg_2 = case_data_2.groupby("low_income_ratio")["fed_penalty_assessed_amt"].mean().reset_index()
 
     # Extract the ratio and dollar amounts as variables
@@ -178,6 +169,7 @@ def model_linear(case_data, test, demographic):
 
 
 def display_facts(merged_data, state, county, primary_law, field_name, number_format="${:,}"):
+    # print(merged_data)
     merged_data = merged_data[(merged_data["state"] == state) & (merged_data["county"] == county) & (merged_data["primary_law"] == primary_law)]
     print(merged_data)
 
@@ -193,7 +185,7 @@ def display_facts(merged_data, state, county, primary_law, field_name, number_fo
 
 
 def display_map(merged_data):
-    display_map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles="CartoDB positron")
+    dis_map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles="CartoDB positron")
     oakland = st.selectbox("Remove Oakland?", ("Y", "N"))
     if oakland == "Y":
         merged_data = merged_data[merged_data["county"] != "OAKLAND"]
@@ -205,11 +197,11 @@ def display_map(merged_data):
         key_on="feature.properties.name",
         line_opacity=0.8,
         highlight=True)
-    choropleth.geojson.add_to(display_map)
+    choropleth.geojson.add_to(dis_map)
     # choropleth.geojson.add_to(map)
     choropleth.geojson.add_child(
         folium.features.GeoJsonTooltip(["name"], labels=False))
-    st_map = st_folium(display_map, width=700, height=450)
+    st_map = st_folium(dis_map, width=700, height=450)
     state_name = ""
     if st_map["last_active_drawing"]:
         state_name = st_map["last_active_drawing"]["properties"]["name"]
@@ -221,7 +213,8 @@ def display_pie_chart(merged_data, grouped_data_low_income, state, county):
     demo_data = merged_data.loc[:, ["white_population_ratio", "black_population_ratio", "hispanic_population_ratio",
                                     "asian_population_ratio", "american_indian_population_ratio", "other"]]
     demo_data = demo_data.rename(
-        columns={"white_population_ratio": "White", "black_population_ratio": "Black", "hispanic_population_ratio": "Hispanic", "asian_population_ratio": "Asian", "american_indian_population_ratio": "American Indian", "other": "Other"})
+        columns={"white_population_ratio": "White", "black_population_ratio": "Black", "hispanic_population_ratio": "Hispanic",
+                 "asian_population_ratio": "Asian", "american_indian_population_ratio": "American Indian", "other": "Other"})
 
     data_long = demo_data.melt()
 
@@ -260,11 +253,21 @@ def display_pie_chart(merged_data, grouped_data_low_income, state, county):
     fig2.set_facecolor("#f0f0f0")
 
     # Display the income ratio pie chart in Streamlit
+
     col1, col2 = st.columns(2)
     with col1:
         st.pyplot(fig)
     with col2:
         st.pyplot(fig2)
+
+
+def full_name(state_abbrev: str, states_dict=STATES_DICT) -> str:
+    reverse_states = {v: k for k, v in states_dict.items()}
+    return reverse_states.get(state_abbrev)
+
+
+def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
+    return states_dict.get(state_name)
 
 
 def plot_count_of_violations_and_penalty_value(df):
@@ -308,15 +311,6 @@ def plot_count_of_violations_and_penalty_value(df):
     st.bar_chart(law_penalty_pivot, use_container_width=True)
 
 
-def full_name(state_abbrev: str, states_dict=STATES_DICT) -> str:
-    reverse_states = {v: k for k, v in states_dict.items()}
-    return reverse_states.get(state_abbrev)
-
-
-def abbrev_name(state_name: str, states_dict=STATES_DICT) -> str:
-    return states_dict.get(state_name)
-
-
 def run_and_display_stdout(*cmd_with_args):
     result = subprocess.Popen(cmd_with_args, stdout=subprocess.PIPE)
     for line in iter(lambda: result.stdout.readline(), b""):
@@ -324,11 +318,9 @@ def run_and_display_stdout(*cmd_with_args):
 
 
 def main():
-    # Load data
     case_data = pd.read_csv(DATA_PATH)
 
     laws_tuple = tuple(case_data["primary_law"].unique())
-
     # CLEAN DATA
     case_data["county"] = case_data["county"].str.replace("COUNTY", "").str.strip()
     case_data = case_data[case_data["county"] != "-- NOT DEFINED --"]
@@ -336,13 +328,16 @@ def main():
     def validate_lat_lon_us(data, lat_column, lon_column):
         min_lat, max_lat = 24.396308, 49.384358
         min_lon, max_lon = -125.000000, -66.934570
+
         invalid_rows = []
 
         for index, row in data.iterrows():
             lat = row[lat_column]
             lon = row[lon_column]
+
             if not (min_lat <= lat <= max_lat) or not (min_lon <= lon <= max_lon):
                 invalid_rows.append(index)
+
         return data.drop(invalid_rows)
 
     # "LATITUDE_MEASURE" and "LONGITUDE_MEASURE" are the columns containing latitude and longitude values
@@ -362,7 +357,7 @@ def main():
     case_data["other"] = 1 - (case_data["hispanic_population_ratio"] + case_data["asian_population_ratio"] + case_data["american_indian_population_ratio"] + case_data["black_population_ratio"] + case_data["white_population_ratio"])
     case_data = case_data[case_data["other"] >= 0]
 
-    choice = st.selectbox("Display Choice", ("Utilities", "Demographics and Fine Predictor", "Heat Map"))
+    choice = st.selectbox("Display Choice", ("Demographics and Fine Predictor", "Heat Map", "Utilities"))
 
     if choice == "Demographics and Fine Predictor":
         APP_TITLE = "DEMOGRAPHICS ANALYSIS"
@@ -418,10 +413,10 @@ def main():
 
         # For Hispanic population
         max_slider_value_hispanic = 1.0 - ratio_black_population - ratio_white_population - ratio_asian_population - ratio_american_indian_population
+
         ratio_hispanic_population = st.slider("What is the ratio of the Hispanic population?", 0.0, max_slider_value_hispanic, step=0.1)
 
         model_rf(model, state, ratio_low_income, ratio_black_population, ratio_white_population, ratio_asian_population, ratio_american_indian_population, ratio_hispanic_population)
-
     if choice == "Heat Map":
         APP_TITLE = "EPA at the County Level"
         APP_SUB_TITLE = "Source: ECHO Data"
@@ -449,7 +444,6 @@ def main():
         primary_law = st.selectbox("Which Primary Law?", (laws_tuple))
         display_facts(grouped_data_metrics, state, county, primary_law, "Average Penalty")
         plot_count_of_violations_and_penalty_value(case_data)
-
     if choice == "Utilities":
         APP_TITLE = "Processing Utilities"
         APP_SUB_TITLE = "Here new data can be extracted and transformed, as well as models retrained."
@@ -459,8 +453,6 @@ def main():
 
         ex_button = st.button("Extract Data", help="Extracts the data from the EPA ECHO website.")
         if ex_button:
-            st.write("Extracting Data...")
-            st.write("Please wait, this can take upwards of 10-20 minutes.")
             run_and_display_stdout("python", "src/extracting.py")
 
         pp_button = st.button("Transform Data", help="Transforms the data into a format used in modeling.")

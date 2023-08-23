@@ -1,5 +1,6 @@
 *.DS_Store
 *.md
+*_old.py
 .git
 .cache
 logs/
