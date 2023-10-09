@@ -70,3 +70,23 @@ The first button is 'Extract Data'. It links to the EPA ECHO website. This is th
 The second button is 'Transform Data'. This processes the data so that the models in the application can use it to model. This will create a new file in the /processed/ directory.
 
 Finally there is a button to retrain the demographic model. Note this is usually retrained when the application is opened for the first time. This will create a new file in the /models/ directory.
+
+## Developer Notes
+
+For local testing update local to local paths. `app/` --> `EPA-ECHO-PROJECT/` (or what ever you names the folder locally)
+
+if you need to inspect the container, run in PowerShell:
+open interactive terminal `docker exec -it capstone /bin/bash` 
+
+if you need to move files arround:
+`docker cp container_id:/path/to/container/file_or_directory /path/on/host`
+
+#### Recommend work flow
+
+1. Update the paths to local dir `app/` --> `EPA-ECHO-PROJECT/`
+2. at root `python src/extracting.py` (Create raw data folder)
+3. `python src/preprocessing.py`
+4. `python src/modeling.py`
+5. Make you code changes and test locally.
+6. Once happy with changes just revert `EPA-ECHO-PROJECT/` --> `app/`
+7. Deploy container for full test
