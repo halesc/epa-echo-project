@@ -12,3 +12,5 @@ lib/processed/legislators.csv
 lib/processed/tidy_data_*
 src/__pycache__/**
 *_old.py
+
+.geojson*

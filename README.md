@@ -81,12 +81,73 @@ open interactive terminal `docker exec -it capstone /bin/bash`
 if you need to move files arround:
 `docker cp container_id:/path/to/container/file_or_directory /path/on/host`
 
-#### Recommend work flow
+### Recommend work flow for local development
 
-1. Update the paths to local dir `app/` --> `EPA-ECHO-PROJECT/`
-2. at root `python src/extracting.py` (Create raw data folder)
-3. `python src/preprocessing.py`
-4. `python src/modeling.py`
+⚠️ Special Note:
+`python src/extracting.py` can take upwards of an hr or more to run locally. This depends on personal compute set up and internet speed. 
+Docker however can get spun up much quicker. 
+
+So if you need to get the raw data downloaded locally and quickly do the following:
+- open a Powershell terminal
+- run `docker exec -it capstone /bin/bash` (assumes you have already spun up the docker container and its running)
+- now that you are inside the container run `cd lib/raw/` then `ls` to inspect dirrectory. 
+- if this is what you want you now know the path and you can just copy it from docker to local. 
+- back in a bash terminal `docker cp <container_id>:/app/lib/raw ./lib/`
+- you will also need to copy the `docker cp <container_id>:/app/lib/us-state-boundaries.geojson ./lib/`
+
+- if select files are not downloading just download manaully and then move into dirrectory. 
+
+1. Update the `.env` file (comment out the path you dont need)
+    - this determins docker ver local development path
+2. run `make install` (assumes you have make installed)
+    - this build a venv that mimics your docker environment set up
+2. at root `python src/extracting.py` (Downloads Raw Data Locally-- this will take time ~ 1hr)
+3. `python src/preprocessing.py` (Process Raw Data)
+4. `python src/modeling.py` (Complete Modeling)
 5. Make you code changes and test locally.
-6. Once happy with changes just revert `EPA-ECHO-PROJECT/` --> `app/`
+6. Once happy with changes just revert your selection in the `.env` to select the docker path
 7. Deploy container for full test
+
+
+### Addition of GQIS
+
+#### General steps:
+
+To incorporate interactive mapping with QGIS into your Streamlit web application, you can use the QGIS server to serve your map as a web service. Here are the general steps to achieve this:
+
+1. **Set up QGIS Server**: Make sure you have QGIS Server installed and configured. QGIS Server is a part of QGIS that allows you to publish QGIS projects as web maps.
+
+2. **Create a QGIS Project**: Create a QGIS project (.qgs file) that includes the layers you want to display on the map. You can add your own data layers to this project.
+
+3. **Configure QGIS Server**: Configure QGIS Server to serve your project as a web map. This usually involves setting up a project file (.qgs) and specifying the project's CRS (Coordinate Reference System).
+
+4. **Serve the Map**: Start QGIS Server, and ensure that it is running and serving the map you've configured. You should be able to access the map via a URL.
+
+5. **Integrate with Streamlit**:
+   - In your Streamlit application, you can use the `st.iframe` function to embed the QGIS Server URL into your web app. This will display the map as an iframe within your Streamlit app.
+
+   - You can also use Streamlit's `st.write` to display instructions to the user about how to use the map, such as panning, zooming, or interacting with the data layers.
+
+   - If you need to pass data or parameters to QGIS Server to customize the map display (e.g., filter data by certain criteria), you can construct the URL with the necessary parameters and embed it in the iframe.
+
+Here's a simplified example of how you can embed the QGIS map into your Streamlit app using `st.iframe`:
+
+```python
+import streamlit as st
+
+# Define the URL of your QGIS Server map service
+qgis_map_url = "http://your-qgis-server-url.com/your-map-project"
+
+st.title("Interactive Map with QGIS")
+
+st.write("Use the interactive map to explore the data.")
+
+# Embed the QGIS map using an iframe
+st.iframe(qgis_map_url, width=800, height=600)
+```
+
+This code will display the QGIS map within your Streamlit app. Users can interact with the map just as they would with a regular web map served by QGIS Server.
+
+Please make sure to replace `"http://your-qgis-server-url.com/your-map-project"` with the actual URL of your QGIS Server map service. Additionally, ensure that QGIS Server is properly configured to serve your map.
+
+By following these steps, you can incorporate interactive mapping with QGIS into your Streamlit application, allowing users to visualize and interact with geographical data alongside the existing features of your web app.

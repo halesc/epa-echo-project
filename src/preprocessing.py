@@ -6,15 +6,22 @@ import os
 import gc
 import datetime
 import pandas as pd
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Access the variables using os.environ
+path_variable = os.environ.get("DEV_PATH")
+
 
 # TODO: If adding state databases, clearly clean and join them.
 # TODO: If above, normalize penalty by facility size.
 # TODO: Explore and possibly add compliance_action_cost to penalty.
 
 DT = datetime.datetime.now()
-ECHO_LOC = "app/lib/raw/"
+ECHO_LOC = f"{path_variable}/lib/raw/"
 READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), ECHO_LOC)
-WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + "app/lib/processed/"
+WRITE_PATH = READ_PATH[:-len(ECHO_LOC)] + f"{path_variable}/lib/processed/"
 
 try:
     os.mkdir(WRITE_PATH)
