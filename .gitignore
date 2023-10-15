@@ -14,3 +14,5 @@ src/__pycache__/**
 *_old.py
 
 .geojson*
+
+.venv*

@@ -151,3 +151,18 @@ This code will display the QGIS map within your Streamlit app. Users can interac
 Please make sure to replace `"http://your-qgis-server-url.com/your-map-project"` with the actual URL of your QGIS Server map service. Additionally, ensure that QGIS Server is properly configured to serve your map.
 
 By following these steps, you can incorporate interactive mapping with QGIS into your Streamlit application, allowing users to visualize and interact with geographical data alongside the existing features of your web app.
+
+
+## QGIS
+[Sample Data](https://github.com/qgis/QGIS-Sample-Data/tree/master)
+[Code Examples/ Old Version ⚠️](https://github.com/qgis/QGIS-Code-Examples)
+[Full GQIS Repo](https://github.com/qgis/QGIS-Documentation)
+[Google Earth ex](https://github.com/giswqs/qgis-earthengine-examples)
+
+## Foluom Earth
+[Notebook](https://github.com/giswqs/qgis-earthengine-examples/blob/master/Folium/ee-api-folium-setup.ipynb)
+
+
+
+# TODO
+Set limititation of CPU utilization for docker container. Using 100% of CPU and crashing conmputer

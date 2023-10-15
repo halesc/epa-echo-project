@@ -6,3 +6,4 @@
 logs/
 lib/raw/**
 src/__pycache__/
+.venv/*
