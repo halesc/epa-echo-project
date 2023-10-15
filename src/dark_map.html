@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_f91ee2832392145ef1ae1193e8ab1562 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_f91ee2832392145ef1ae1193e8ab1562" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_f91ee2832392145ef1ae1193e8ab1562 = L.map(
+                "map_f91ee2832392145ef1ae1193e8ab1562",
+                {
+                    center: [51.5074, -0.1278],
+                    crs: L.CRS.EPSG3857,
+                    zoom: 12,
+                    zoomControl: true,
+                    preferCanvas: false,
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_94e31fb0d1dec3883ec10eb4faf0f4cc = L.tileLayer(
+                "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
+                {"attribution": "\u0026copy; \u003ca target=\"_blank\" href=\"http://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca target=\"_blank\" href=\"http://cartodb.com/attributions\"\u003eCartoDB\u003c/a\u003e, CartoDB \u003ca target=\"_blank\" href =\"http://cartodb.com/attributions\"\u003eattributions\u003c/a\u003e", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+            ).addTo(map_f91ee2832392145ef1ae1193e8ab1562);
+        
+    
+            var marker_e2fa8bf19f7bcde0e9fc45b77242aeca = L.marker(
+                [51.5074, -0.1278],
+                {}
+            ).addTo(map_f91ee2832392145ef1ae1193e8ab1562);
+        
+    
+            var icon_687e74b0ba2a21bca298ceed7b0bafda = L.AwesomeMarkers.icon(
+                {"extraClasses": "fa-rotate-0", "icon": "cloud", "iconColor": "white", "markerColor": "blue", "prefix": "glyphicon"}
+            );
+            marker_e2fa8bf19f7bcde0e9fc45b77242aeca.setIcon(icon_687e74b0ba2a21bca298ceed7b0bafda);
+        
+    
+        var popup_9a755e946696343fb3f0ef17b97b99b7 = L.popup({"maxWidth": "100%"});
+
+        
+            
+                var html_bff3455e5ad937ca1dd61f661f8412ad = $(`<div id="html_bff3455e5ad937ca1dd61f661f8412ad" style="width: 100.0%; height: 100.0%;">London</div>`)[0];
+                popup_9a755e946696343fb3f0ef17b97b99b7.setContent(html_bff3455e5ad937ca1dd61f661f8412ad);
+            
+        
+
+        marker_e2fa8bf19f7bcde0e9fc45b77242aeca.bindPopup(popup_9a755e946696343fb3f0ef17b97b99b7)
+        ;
+
+        
+    
+</script>
+</html>

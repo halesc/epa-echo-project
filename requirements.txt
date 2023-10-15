@@ -10,8 +10,8 @@ folium==0.14.0
 streamlit==1.24.0
 streamlit-folium==0.13.0
 matplotlib==3.7.2
-python-dotenv==0.16.0
-PyQt5>=5.15.10
+python-dotenv
+# PyQt5>=5.15.10
 Sphinx==4.5
 sphinx-intl==2.0.1
 icalendar
@@ -22,3 +22,8 @@ sphinxext-rediraffe
 sphinx_togglebutton
 requests>=2.25.1
 sphinx_copybutton
+ipykernel
+leafmap
+geopandas
+pycrs
+osmnx
