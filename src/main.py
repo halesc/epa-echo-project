@@ -30,6 +30,7 @@ FILE_PATH = os.path.dirname(os.path.abspath("")[:-3])
 RF_MODEL_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/models", "rf_model.pkl")
 LN_MODEL_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/models", "ln_model.pkl")
 DATA_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/processed", "tidy_data.csv")
+SITE_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/raw", "geocoded_data.csv")
 
 # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
 
@@ -195,23 +196,18 @@ def display_facts(merged_data, state, county, primary_law, field_name, number_fo
 def display_map(merged_data):
     dis_map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles="CartoDB positron")
 
-    sample_data = pd.DataFrame({
-        'State': ['California', 'California', 'New York', 'Texas', 'New York', 'Texas'],
-        'County': ['Los Angeles', 'San Francisco', 'New York County', 'Harris', 'Kings', 'Dallas'],
-        'Population': [10000000, 800000, 8500000, 4500000, 2700000, 2800000],
-        'Area': [4687, 121, 468.9, 1772, 113, 881],
-        'City': ['Los Angeles', 'San Francisco', 'New York City', 'Houston', 'Brooklyn', 'Dallas'],
-        'Latitude': [34.0522, 37.7749, 40.7128, 29.7604, 40.6782, 32.7767],
-        'Longitude': [-118.2437, -122.4194, -74.0060, -95.3698, -73.9442, -96.7970]
-    })
+    site_data = pd.read_csv('./lib/raw/geocoded_data.csv')
 
     # Add markers for each row in the DataFrame
-    for index, row in sample_data.iterrows():
-        folium.Marker(
-            location=[row['Latitude'], row['Longitude']],
-            popup=f"{row['City']} - {row['Population']}",
-            icon=folium.Icon(icon="cloud"),
-        ).add_to(dis_map)
+    for index, row in site_data.iterrows():
+        try:
+            folium.Marker(
+                location=[row['Latitude'], row['Longitude']],
+                popup=f"{row['City']} - {row['Site']}",
+                icon=folium.Icon(icon="cloud"),
+            ).add_to(dis_map)
+        except (ValueError):
+            print(f"Skipping row {index} due to missing or invalid latitude/longitude values.")
 
     # Load the air pollution shapefile using GeoPandas
     air_pollution_shapefile = gpd.read_file("./lib/fire/Perimeters.shp")
@@ -227,8 +223,8 @@ def display_map(merged_data):
     air_pollution_layer = folium.GeoJson(air_pollution_geojson, name='Air Pollution')
     air_pollution_layer.add_to(dis_map)
 
-    # Add Layer Control
-    folium.LayerControl().add_to(dis_map)
+    # Add Layer Control (Adding makaes map really small)
+    # folium.LayerControl().add_to(dis_map)
     
     oakland = st.selectbox("Remove Oakland?", ("Y", "N"))
     if oakland == "Y":
