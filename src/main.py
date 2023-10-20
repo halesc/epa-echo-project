@@ -12,6 +12,8 @@ import numpy as np
 import folium
 from streamlit_folium import st_folium
 from dotenv import load_dotenv
+import geopandas as gpd
+
 
 load_dotenv()
 
@@ -192,6 +194,42 @@ def display_facts(merged_data, state, county, primary_law, field_name, number_fo
 
 def display_map(merged_data):
     dis_map = folium.Map(location=[38, -96.5], zoom_start=4, scrollWheelZoom=False, tiles="CartoDB positron")
+
+    sample_data = pd.DataFrame({
+        'State': ['California', 'California', 'New York', 'Texas', 'New York', 'Texas'],
+        'County': ['Los Angeles', 'San Francisco', 'New York County', 'Harris', 'Kings', 'Dallas'],
+        'Population': [10000000, 800000, 8500000, 4500000, 2700000, 2800000],
+        'Area': [4687, 121, 468.9, 1772, 113, 881],
+        'City': ['Los Angeles', 'San Francisco', 'New York City', 'Houston', 'Brooklyn', 'Dallas'],
+        'Latitude': [34.0522, 37.7749, 40.7128, 29.7604, 40.6782, 32.7767],
+        'Longitude': [-118.2437, -122.4194, -74.0060, -95.3698, -73.9442, -96.7970]
+    })
+
+    # Add markers for each row in the DataFrame
+    for index, row in sample_data.iterrows():
+        folium.Marker(
+            location=[row['Latitude'], row['Longitude']],
+            popup=f"{row['City']} - {row['Population']}",
+            icon=folium.Icon(icon="cloud"),
+        ).add_to(dis_map)
+
+    # Load the air pollution shapefile using GeoPandas
+    air_pollution_shapefile = gpd.read_file("./lib/fire/Perimeters.shp")
+
+    # Convert the GeoDataFrame to GeoJSON
+    air_pollution_geojson = air_pollution_shapefile.to_json()
+
+    # Overlay the air pollution data on the map using folium.GeoJson
+    air_pollution_layer = folium.GeoJson(air_pollution_geojson, name='Air Pollution')
+    air_pollution_layer.add_to(dis_map)
+
+    # Overlay the air pollution data on the map using folium.GeoJson
+    air_pollution_layer = folium.GeoJson(air_pollution_geojson, name='Air Pollution')
+    air_pollution_layer.add_to(dis_map)
+
+    # Add Layer Control
+    folium.LayerControl().add_to(dis_map)
+    
     oakland = st.selectbox("Remove Oakland?", ("Y", "N"))
     if oakland == "Y":
         merged_data = merged_data[merged_data["county"] != "OAKLAND"]
