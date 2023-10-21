@@ -26,6 +26,7 @@ import pandas as pd
 import folium
 from folium.plugins import TagFilterButton
 from folium.plugins import Search
+from folium.plugins import LocateControl
 import numpy as np
 import random
 import branca
@@ -78,15 +79,16 @@ mean = round(df["penalty_frequency"].mean(), 2)
 
 print(f"minimum: {minimum}", f"maximum: {maximum}", f"Mean: {mean}", sep="\n\n")
 
-
+# TODO Color Distrobutions to be inproved (only 1.0 solid purple)
 colormap = branca.colormap.LinearColormap(
     colors=["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"],
-    index=df["penalty_frequency"].quantile([0.2, 0.4, 0.6, 0.8]),
+    index=df["penalty_frequency"].quantile([0.1, 0.4, 0.6, 0.9]),
     vmin=minimum,
     vmax=maximum,
 )
 
 us_cities = geopandas.sjoin(cities, states, how="inner", predicate="within")
+us_cities.head()
 
 pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[
     ["nameascii", "pop_max", "geometry"]
@@ -168,7 +170,8 @@ add_markers_and_filter(df, 'primary_law', m)
 add_markers_and_filter(df, 'state', m)
 
 # Add layer control
-folium.LayerControl().add_to(m) 
+folium.LayerControl().add_to(m)
+folium.plugins.LocateControl(auto_start=False).add_to(m)
 m.save('map.html')
 
 
