@@ -179,7 +179,7 @@ statesearch = Search(
 
 citysearch = Search(
     layer=citygeo,
-    geom_type="Point",
+    geom_type="Polygon",
     placeholder="Search for a US City",
     collapsed=False,
     search_label="nameascii",
