@@ -30,7 +30,6 @@ from folium.plugins import LocateControl
 import numpy as np
 import random
 import branca
-
 import geopandas
 
 states = geopandas.read_file(
@@ -94,12 +93,77 @@ pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[
     ["nameascii", "pop_max", "geometry"]
 ].iloc[:20]
 
+# Function to create a folium map with a specific location and zoom level
+def create_base_map():
+    m = folium.Map(location=[37.0902, -95.7129], zoom_start=4)
+    folium.TileLayer('openstreetmap').add_to(m)
+    return m
+
 
 # Create map and set the initial view to cover the USA
-m = folium.Map(location=[37.0902, -95.7129], zoom_start=4)
-folium.TileLayer('openstreetmap').add_to(m)
+m = create_base_map()
 
-########################## SEARCH ###############################################
+########################## Boeing Layer
+boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
+boeing_data.columns
+boeing_data = boeing_data.dropna(subset=['Latitude','Longitude'])
+boeing_data.head()
+
+# Create a feature group for host sites
+host_sites_layer = folium.FeatureGroup(name="Host Sites")
+
+for index, row in boeing_data.iterrows():
+    latlng = (float(row["Latitude"]), float(row["Longitude"]))
+    host_site = row["Host Site"]
+
+    folium.CircleMarker(
+        location=latlng,
+        radius=4,
+        color="green",
+        fill=True,
+        fill_color="green",
+        fill_opacity=.6,
+        popup=host_site,
+    ).add_to(host_sites_layer)
+
+# Add the host sites feature group to the map
+host_sites_layer.add_to(m)
+
+
+########################## Citations
+
+# Define a function to add markers and filters for a specific category
+def add_markers_and_filter(df, category_column, map):
+    categories = df[category_column].unique().tolist()
+    categories_sorted = sorted(categories)
+    
+    for index, row in df.iterrows():
+        latlng = (row['lat'], row['long'])
+        category = row[category_column]
+
+        # Create a custom HTML icon with a red exclamation mark
+        icon_html = """
+        <div style="font-size: 8px; color: red;">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        """
+
+        folium.Marker(
+            location=latlng,
+            icon=folium.DivIcon(html=icon_html),  # Use the custom icon
+            popup=category,
+            tags=[category]  # Set the category as a popup message
+        ).add_to(map)
+
+    TagFilterButton(categories_sorted, name=category_column).add_to(map)
+
+
+# Create markers and filters for 'primary_law'
+add_markers_and_filter(df, 'primary_law', m)
+add_markers_and_filter(df, 'state', m)
+
+
+# ########################## SEARCH ###############################################
 def style_function(x):
     return {
         "fillColor": colormap(x["properties"]["density"]),
@@ -107,7 +171,6 @@ def style_function(x):
         "weight": 2,
         "fillOpacity": 0.5,
     }
-
 
 stategeo = folium.GeoJson(
     states,
@@ -139,39 +202,17 @@ citysearch = Search(
     layer=citygeo,
     geom_type="Point",
     placeholder="Search for a US City",
-    collapsed=True,
+    collapsed=False,
     search_label="nameascii",
 ).add_to(m)
 
-folium.LayerControl().add_to(m)
 colormap.add_to(m)
-
-########################## MAPPING ##############################################
-
-# Define a function to add markers and filters for a specific category
-def add_markers_and_filter(df, category_column, map):
-    categories = df[category_column].unique().tolist()
-    
-    for index, row in df.iterrows():
-        latlng = (row['lat'], row['long'])
-        category = row[category_column]
-
-        folium.Marker(
-            location=latlng,
-            popup=category,
-            tags=[category]  # Set the category as a popup message
-        ).add_to(map)
-
-    TagFilterButton(categories, name=category_column).add_to(map)
-
-
-# Create markers and filters for 'primary_law'
-add_markers_and_filter(df, 'primary_law', m)
-add_markers_and_filter(df, 'state', m)
-
-# Add layer control
 folium.LayerControl().add_to(m)
 folium.plugins.LocateControl(auto_start=False).add_to(m)
 m.save('map.html')
+
+
+
+
 
 
