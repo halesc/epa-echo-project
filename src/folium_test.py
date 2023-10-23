@@ -32,6 +32,60 @@ import random
 import branca
 import geopandas
 
+state_abbreviations = {
+    'Alabama': 'AL',
+    'Alaska': 'AK',
+    'Arizona': 'AZ',
+    'Arkansas': 'AR',
+    'California': 'CA',
+    'Colorado': 'CO',
+    'Connecticut': 'CT',
+    'Delaware': 'DE',
+    'Florida': 'FL',
+    'Georgia': 'GA',
+    'Hawaii': 'HI',
+    'Idaho': 'ID',
+    'Illinois': 'IL',
+    'Indiana': 'IN',
+    'Iowa': 'IA',
+    'Kansas': 'KS',
+    'Kentucky': 'KY',
+    'Louisiana': 'LA',
+    'Maine': 'ME',
+    'Maryland': 'MD',
+    'Massachusetts': 'MA',
+    'Michigan': 'MI',
+    'Minnesota': 'MN',
+    'Mississippi': 'MS',
+    'Missouri': 'MO',
+    'Montana': 'MT',
+    'Nebraska': 'NE',
+    'Nevada': 'NV',
+    'New Hampshire': 'NH',
+    'New Jersey': 'NJ',
+    'New Mexico': 'NM',
+    'New York': 'NY',
+    'North Carolina': 'NC',
+    'North Dakota': 'ND',
+    'Ohio': 'OH',
+    'Oklahoma': 'OK',
+    'Oregon': 'OR',
+    'Pennsylvania': 'PA',
+    'Rhode Island': 'RI',
+    'South Carolina': 'SC',
+    'South Dakota': 'SD',
+    'Tennessee': 'TN',
+    'Texas': 'TX',
+    'Utah': 'UT',
+    'Vermont': 'VT',
+    'Virginia': 'VA',
+    'Washington': 'WA',
+    'West Virginia': 'WV',
+    'Wisconsin': 'WI',
+    'Wyoming': 'WY'
+}
+
+
 states = geopandas.read_file(
     "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     driver="GeoJSON",
@@ -53,38 +107,11 @@ sample_size = int(len(df) * sample_fraction)
 
 # Randomly select 10% of the data
 df = df.sample(n=sample_size, random_state=42)
-df.columns
-
-# Assuming 'lat' and 'lng' are the column names in your DataFrame
-missing_lat = df['lat'].isnull().sum()
-missing_lng = df['long'].isnull().sum()
-
-total_rows = len(df)
-percentage_missing_lat = (missing_lat / total_rows) * 100
-percentage_missing_lng = (missing_lng / total_rows) * 100
-
-## Good to drop those missing (small %)
-print(f"Percentage of missing latitude data: {percentage_missing_lat:.2f}%")
-print(f"Percentage of missing longitude data: {percentage_missing_lng:.2f}%")
 df = df.dropna(subset=['lat', 'long'])
 
 # penalty_frequency color
 def rd2(x):
     return round(x, 2)
-
-minimum, maximum = df["penalty_frequency"].quantile([0.05, 0.95]).apply(rd2)
-
-mean = round(df["penalty_frequency"].mean(), 2)
-
-print(f"minimum: {minimum}", f"maximum: {maximum}", f"Mean: {mean}", sep="\n\n")
-
-# TODO Color Distrobutions to be inproved (only 1.0 solid purple)
-colormap = branca.colormap.LinearColormap(
-    colors=["#f2f0f7", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"],
-    index=df["penalty_frequency"].quantile([0.1, 0.4, 0.6, 0.9]),
-    vmin=minimum,
-    vmax=maximum,
-)
 
 us_cities = geopandas.sjoin(cities, states, how="inner", predicate="within")
 us_cities.head()
@@ -97,11 +124,66 @@ pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[
 def create_base_map():
     m = folium.Map(location=[37.0902, -95.7129], zoom_start=4)
     folium.TileLayer('openstreetmap').add_to(m)
+    folium.TileLayer('cartodbpositron').add_to(m)
     return m
 
 
 # Create map and set the initial view to cover the USA
 m = create_base_map()
+
+# Modify the style_function to use state abbreviations for lookup and set state color based on citation count
+def style_function(x):
+    state_name = x["properties"]["name"]
+    # Use the mapping to get the abbreviation
+    state_abbreviation = state_abbreviations.get(state_name, state_name)
+    
+    # Use the abbreviation for lookup
+    citation_count = df[df['state'] == state_abbreviation]['state'].count()
+    
+    return {
+        "fillColor": f"#ff0000{citation_count:02x}",  # Set state color based on citation count
+        "color": "black",
+        "weight": 2,
+        "fillOpacity": 0.7
+    }
+
+# Create the stategeo GeoJson feature and add the annotation
+stategeo = folium.GeoJson(
+    states,
+    name="Citation Count",
+    style_function=style_function,
+    tooltip=folium.GeoJsonTooltip(
+        fields=["name"],
+        aliases=["State"],
+        localize=True
+    ),
+).add_to(m)
+
+
+citygeo = folium.GeoJson(
+    pop_ranked_cities,
+    name="US Cities",
+    tooltip=folium.GeoJsonTooltip(
+        fields=["nameascii", "pop_max"], aliases=["", "Population Max"], localize=True
+    ),
+).add_to(m)
+
+statesearch = Search(
+    layer=stategeo,
+    geom_type="Polygon",
+    placeholder="Search for a US State",
+    collapsed=False,
+    search_label="name",
+    weight=3,
+).add_to(m)
+
+citysearch = Search(
+    layer=citygeo,
+    geom_type="Point",
+    placeholder="Search for a US City",
+    collapsed=False,
+    search_label="nameascii",
+).add_to(m)
 
 ########################## Boeing Layer
 boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
@@ -163,50 +245,7 @@ add_markers_and_filter(df, 'primary_law', m)
 add_markers_and_filter(df, 'state', m)
 
 
-# ########################## SEARCH ###############################################
-def style_function(x):
-    return {
-        "fillColor": colormap(x["properties"]["density"]),
-        "color": "black",
-        "weight": 2,
-        "fillOpacity": 0.5,
-    }
 
-stategeo = folium.GeoJson(
-    states,
-    name="US States",
-    style_function=style_function,
-    tooltip=folium.GeoJsonTooltip(
-        fields=["name", "density"], aliases=["State", "Density"], localize=True
-    ),
-).add_to(m)
-
-citygeo = folium.GeoJson(
-    pop_ranked_cities,
-    name="US Cities",
-    tooltip=folium.GeoJsonTooltip(
-        fields=["nameascii", "pop_max"], aliases=["", "Population Max"], localize=True
-    ),
-).add_to(m)
-
-statesearch = Search(
-    layer=stategeo,
-    geom_type="Polygon",
-    placeholder="Search for a US State",
-    collapsed=False,
-    search_label="name",
-    weight=3,
-).add_to(m)
-
-citysearch = Search(
-    layer=citygeo,
-    geom_type="Point",
-    placeholder="Search for a US City",
-    collapsed=False,
-    search_label="nameascii",
-).add_to(m)
-
-colormap.add_to(m)
 folium.LayerControl().add_to(m)
 folium.plugins.LocateControl(auto_start=False).add_to(m)
 m.save('map.html')
