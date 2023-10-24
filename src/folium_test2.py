@@ -6,20 +6,101 @@ import pandas as pd
 import numpy as np
 import geopandas
 
+def create_base_map(df, lat_col, lon_col):
+    m = folium.Map(location=[df[lat_col].mean(), df[lon_col].mean()], zoom_start=5)
+    return m
+
+def add_citation_count_layer(m, df, states, state_abbreviations):
+    citation_count_layer = folium.FeatureGroup(name="Citation Count by State")
+
+    def style_function_count(x):
+        state_name = x["properties"]["name"]
+        state_abbreviation = state_abbreviations.get(state_name, state_name)
+        citation_count = df[df['state'] == state_abbreviation]['state'].count()
+        
+        return {
+            "fillColor": f"#ff0000{citation_count:02}",
+            "color": "black",
+            "weight": 2,
+            "fillOpacity": 0.6
+        }
+
+    stategeo_count = folium.GeoJson(
+        states,
+        style_function=style_function_count,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["name"],
+            aliases=["State"],
+            localize=True
+        ),
+    ).add_to(citation_count_layer)
+
+    citation_count_layer.add_to(m)
+    return m
+
+def add_avg_compliance_cost_layer(m, df, states, state_abbreviations):
+    avg_cost_layer = folium.FeatureGroup(name="Avg Compliance Cost by State")
+
+    def style_function_avg_cost(x):
+        state_name = x["properties"]["name"]
+        state_abbreviation = state_abbreviations.get(state_name, state_name)
+        avg_compliance_action = df[df['state'] == state_abbreviation]['compliance_action_cost'].mean()
+        
+        if pd.notna(avg_compliance_action):
+            min_cost = df['compliance_action_cost'].min()
+            max_cost = df['compliance_action_cost'].max()
+            normalized_cost = (avg_compliance_action - min_cost) / (max_cost - min_cost)
+
+            return {
+                "fillColor": f"#ff0000{int(normalized_cost * 100):02}",
+                "color": "black",
+                "weight": 2,
+                "fillOpacity": 0.6
+            }
+        else:
+            return {
+                "fillColor": "#cccccc",
+                "color": "black",
+                "weight": 2,
+                "fillOpacity": 0.6
+            }
+
+    stategeo_avg_cost = folium.GeoJson(
+        states,
+        style_function=style_function_avg_cost,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["name"],
+            aliases=["State"],
+            localize=True
+        ),
+    ).add_to(avg_cost_layer)
+
+    avg_cost_layer.add_to(m)
+    return m
+
+def add_data_points_layer(m, df, lat_col, lon_col):
+    data_points_layer = folium.FeatureGroup(name="Unique Citation")
+
+    for index, row in df.iterrows():
+        latlng = (row[lat_col], row[lon_col])
+        popup = ", ".join([f"{col}: {row[col]}" for col in df.columns])
+
+        icon_html = """
+        <div style="font-size: 8px; color: red;">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        """
+
+        folium.Marker(
+            location=latlng,
+            popup=popup,
+            icon=folium.DivIcon(html=icon_html)
+        ).add_to(data_points_layer)
+
+    data_points_layer.add_to(m)
+    return m
+
 def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=None, layer_names=None, boeing_data=None, states_geo=None):
-    """
-    Create a Folium map with filtered data points, interactive filters, and geospatial layers.
-
-    Parameters:
-        df (pandas.DataFrame): The DataFrame containing data to be plotted.
-        lat_col (str): The name of the column containing latitude coordinates.
-        lon_col (str): The name of the column containing longitude coordinates.
-        filter_cols (list of str): List of column names for which you want to create filters.
-        geospatial_layers (list of geopandas.GeoDataFrame, optional): List of geospatial layers to add.
-
-    Returns:
-        folium.Map: The Folium map with data points, interactive filters, and geospatial layers.
-    """
     state_abbreviations = {
         'Alabama': 'AL',
         'Alaska': 'AK',
@@ -73,114 +154,21 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
         'Wyoming': 'WY'
     }
     
-    # Create a base map
-    m = folium.Map(location=[df[lat_col].mean(), df[lon_col].mean()], zoom_start=5)
+    m = create_base_map(df, lat_col, lon_col)
 
-    # Calculate the number of records in each state
-    def style_function_count(x):
-        state_name = x["properties"]["name"]
-        # Use the mapping to get the abbreviation
-        state_abbreviation = state_abbreviations.get(state_name, state_name)
-        
-        # Use the abbreviation for lookup
-        citation_count = df[df['state'] == state_abbreviation]['state'].count()
+    if "Citation Count by State" in geospatial_layers:
+        m = add_citation_count_layer(m, df, geospatial_layers["Citation Count by State"], state_abbreviations)
 
-        return {
-            "fillColor": f"#ff0000{citation_count:02}",  # Set state color based on citation count
-            "color": "black",
-            "weight": 2,
-            "fillOpacity": 0.6
-        }
-    
-    def style_function_avg_cost(x):
-        state_name = x["properties"]["name"]
-        # Use the mapping to get the abbreviation
-        state_abbreviation = state_abbreviations.get(state_name, state_name)
-        
-        # Use the abbreviation for lookup
-        avg_compliance_action = df[df['state'] == state_abbreviation]['compliance_action_cost'].mean()
-        
-        # Check if avg_compliance_action is NaN and handle it
-        if pd.notna(avg_compliance_action):
-            # Normalize the average cost to a range from 0 to 1
-            min_cost = df['compliance_action_cost'].min()
-            max_cost = df['compliance_action_cost'].max()
-            normalized_cost = (avg_compliance_action - min_cost) / (max_cost - min_cost)
+    if "Avg Compliance Cost by State" in geospatial_layers:
+        m = add_avg_compliance_cost_layer(m, df, geospatial_layers["Avg Compliance Cost by State"], state_abbreviations)
 
-            return {
-                "fillColor": f"#ff0000{int(normalized_cost * 100):02}",  # Set state color based on normalized cost
-                "color": "black",
-                "weight": 2,
-                "fillOpacity": 0.6
-            }
-        else:
-            # Handle NaN values (you can choose to give them a specific color or treatment)
-            return {
-                "fillColor": "#cccccc",  # Gray color for NaN values
-                "color": "black",
-                "weight": 2,
-                "fillOpacity": 0.6
-            }
+    m = add_data_points_layer(m, df, lat_col, lon_col)
 
-
-    stategeo_count = folium.GeoJson(
-        states,
-        name="Citation Count by State",
-        style_function=style_function_count,
-        tooltip=folium.GeoJsonTooltip(
-            fields=["name"],
-            aliases=["State"],
-            localize=True
-        ),
-    ).add_to(m)
-
-    stategeo_avg_cost = folium.GeoJson(
-        states,
-        name="Avg Complience Cost by State",
-        style_function=style_function_avg_cost,
-        tooltip=folium.GeoJsonTooltip(
-            fields=["name"],
-            aliases=["State"],
-            localize=True
-        ),
-    ).add_to(m)
-
-    # Create a common layer for all data points
-    data_layer = folium.FeatureGroup(name="Unique Citation")
-    data_layer.add_to(m)
-
-    # Create markers for each row in the DataFrame
-    for index, row in df.iterrows():
-        latlng = (row[lat_col], row[lon_col])
-        popup = ", ".join([f"{col}: {row[col]}" for col in df.columns])
-
-        # Create a custom HTML icon with a red exclamation mark
-        icon_html = """
-        <div style="font-size: 8px; color: red;">
-          <i class="fas fa-exclamation-circle"></i>
-        </div>
-        """
-
-        folium.Marker(
-            location=latlng,
-            popup=popup,
-            icon=folium.DivIcon(html=icon_html)
-        ).add_to(data_layer)
-
-    # Create filters for specified columns
     for col in filter_cols:
         categories = df[col].unique()
         categories_sorted = sorted(str(categories))
-
-        # Create a TagFilterButton for each filter
         TagFilterButton(categories_sorted, name=col).add_to(m)
 
-    # Add geospatial layers if provided
-    if geospatial_layers and layer_names:
-        for i, layer in enumerate(geospatial_layers):
-            folium.GeoJson(layer, name= layer_names[i]).add_to(m)
-
-    # Add a layer for Boeing data if provided
     if boeing_data is not None:
         boeing_layer = folium.FeatureGroup(name="Boeing Locations")
         boeing_layer.add_to(m)
@@ -188,7 +176,6 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
         for index, row in boeing_data.iterrows():
             latlng = (row['Latitude'], row['Longitude'])
             
-            # Create a custom airplane-shaped icon
             icon = folium.CustomIcon(
                 icon_image='https://palmettogoodwill.org/wp-content/uploads/2022/04/png-transparent-boeing-logo-boeing-business-jet-logo-boeing-commercial-airplanes-integrated-blue-company-text.png',
                 icon_size=(20, 20)
@@ -199,33 +186,21 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
                 icon=icon,
             ).add_to(boeing_layer)
 
-    # Add a layer control to toggle the visibility of the data points, filters, and geospatial layers
     folium.LayerControl(collapsed=False).add_to(m)
 
     return m
 
-
-
 ######################## DATA PREP ####################################
 df = pd.read_csv('../lib/processed/tidy_data.csv')
-df.head()
 
-# Randomly select 10% of the data (for working locally)
-# Calculate the number of rows to sample (10%)
 sample_fraction = 0.05
 sample_size = int(len(df) * sample_fraction)
 
-# Randomly select 10% of the data
 df = df.sample(n=sample_size, random_state=42)
 df = df.dropna(subset=['lat', 'long'])
 
-df.columns
+filter_columns = ['primary_law', 'state', 'democrat', 'independent', 'libertarian', 'republican']
 
-# Specify the columns for which you want to create filters
-filter_columns = ['primary_law', 'state', 'democrat', 'independent', 'libertarian',
-       'republican']
-
-# Load the geospatial layers
 states = geopandas.read_file(
     "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
     driver="GeoJSON",
@@ -239,18 +214,17 @@ cities = geopandas.read_file(
 )
 
 us_cities = geopandas.sjoin(cities, states, how="inner", predicate="within")
-us_cities.head()
 
-pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[
-    ["nameascii", "pop_max", "geometry"]
-].iloc[:40]
+pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[["nameascii", "pop_max", "geometry"]].iloc[:40]
 
-# Load Boeing data
 boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
 boeing_data = boeing_data.dropna(subset=['Latitude', 'Longitude'])
 
-# Create the Folium map with filters and geospatial layers
-filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=[states, pop_ranked_cities], layer_names = ["states", "MajorCities"], boeing_data= boeing_data, states_geo=states_geo)
+geospatial_layers = {
+    "Citation Count by State": states,
+    "Avg Compliance Cost by State": states
+}
 
-# Save or display the map
+filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=geospatial_layers, boeing_data=boeing_data, states_geo=states_geo)
+
 filtered_map.save('filtered_map.html')

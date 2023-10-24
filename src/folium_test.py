@@ -24,9 +24,7 @@
 
 import pandas as pd
 import folium
-from folium.plugins import TagFilterButton
-from folium.plugins import Search
-from folium.plugins import LocateControl
+from folium.plugins import TagFilterButton, Search, LocateControl, HeatMap
 import numpy as np
 import random
 import branca
@@ -242,7 +240,10 @@ def add_markers_and_filter(df, category_column, map):
 add_markers_and_filter(df, 'primary_law', m)
 add_markers_and_filter(df, 'state', m)
 
-
+# Create a HeatMap layer
+heat_data = [[row['lat'], row['long']] for index, row in df.iterrows()]
+heat_map = HeatMap(heat_data, name= "HeatMap")
+heat_map.add_to(m)
 
 folium.LayerControl().add_to(m)
 folium.plugins.LocateControl(auto_start=False).add_to(m)
