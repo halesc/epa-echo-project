@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import geopandas
 
-def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=None, layer_names=None, boeing_data=None):
+def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=None, layer_names=None, boeing_data=None, states_geo=None):
     """
     Create a Folium map with filtered data points, interactive filters, and geospatial layers.
 
@@ -20,11 +20,91 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
     Returns:
         folium.Map: The Folium map with data points, interactive filters, and geospatial layers.
     """
+    state_abbreviations = {
+        'Alabama': 'AL',
+        'Alaska': 'AK',
+        'Arizona': 'AZ',
+        'Arkansas': 'AR',
+        'California': 'CA',
+        'Colorado': 'CO',
+        'Connecticut': 'CT',
+        'Delaware': 'DE',
+        'Florida': 'FL',
+        'Georgia': 'GA',
+        'Hawaii': 'HI',
+        'Idaho': 'ID',
+        'Illinois': 'IL',
+        'Indiana': 'IN',
+        'Iowa': 'IA',
+        'Kansas': 'KS',
+        'Kentucky': 'KY',
+        'Louisiana': 'LA',
+        'Maine': 'ME',
+        'Maryland': 'MD',
+        'Massachusetts': 'MA',
+        'Michigan': 'MI',
+        'Minnesota': 'MN',
+        'Mississippi': 'MS',
+        'Missouri': 'MO',
+        'Montana': 'MT',
+        'Nebraska': 'NE',
+        'Nevada': 'NV',
+        'New Hampshire': 'NH',
+        'New Jersey': 'NJ',
+        'New Mexico': 'NM',
+        'New York': 'NY',
+        'North Carolina': 'NC',
+        'North Dakota': 'ND',
+        'Ohio': 'OH',
+        'Oklahoma': 'OK',
+        'Oregon': 'OR',
+        'Pennsylvania': 'PA',
+        'Rhode Island': 'RI',
+        'South Carolina': 'SC',
+        'South Dakota': 'SD',
+        'Tennessee': 'TN',
+        'Texas': 'TX',
+        'Utah': 'UT',
+        'Vermont': 'VT',
+        'Virginia': 'VA',
+        'Washington': 'WA',
+        'West Virginia': 'WV',
+        'Wisconsin': 'WI',
+        'Wyoming': 'WY'
+    }
+    
     # Create a base map
     m = folium.Map(location=[df[lat_col].mean(), df[lon_col].mean()], zoom_start=5)
 
+    # Calculate the number of records in each state
+    def style_function(x):
+        state_name = x["properties"]["name"]
+        # Use the mapping to get the abbreviation
+        state_abbreviation = state_abbreviations.get(state_name, state_name)
+        
+        # Use the abbreviation for lookup
+        citation_count = df[df['state'] == state_abbreviation]['state'].count()
+    
+        return {
+            "fillColor": f"#ff0000{citation_count:02x}",  # Set state color based on citation count
+            "color": "black",
+            "weight": 2,
+            "fillOpacity": 0.6
+        }
+
+    stategeo = folium.GeoJson(
+        states,
+        name="Citations/State",
+        style_function=style_function,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["name"],
+            aliases=["State"],
+            localize=True
+        ),
+    ).add_to(m)
+
     # Create a common layer for all data points
-    data_layer = folium.FeatureGroup(name="Data Points")
+    data_layer = folium.FeatureGroup(name="Unique Citation")
     data_layer.add_to(m)
 
     # Create markers for each row in the DataFrame
@@ -60,7 +140,7 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
 
     # Add a layer for Boeing data if provided
     if boeing_data is not None:
-        boeing_layer = folium.FeatureGroup(name="Boeing Data")
+        boeing_layer = folium.FeatureGroup(name="Boeing Locations")
         boeing_layer.add_to(m)
 
         for index, row in boeing_data.iterrows():
@@ -109,6 +189,8 @@ states = geopandas.read_file(
     driver="GeoJSON",
 )
 
+states_geo = states.to_json()
+
 cities = geopandas.read_file(
     "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_populated_places_simple.geojson",
     driver="GeoJSON",
@@ -126,7 +208,7 @@ boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
 boeing_data = boeing_data.dropna(subset=['Latitude', 'Longitude'])
 
 # Create the Folium map with filters and geospatial layers
-filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=[states, pop_ranked_cities], layer_names = ["states", "cities"], boeing_data= boeing_data)
+filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=[states, pop_ranked_cities], layer_names = ["states", "MajorCities"], boeing_data= boeing_data, states_geo=states_geo)
 
 # Save or display the map
 filtered_map.save('filtered_map.html')
