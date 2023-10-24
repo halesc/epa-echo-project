@@ -187,9 +187,7 @@ citysearch = Search(
 
 ########################## Boeing Layer
 boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
-boeing_data.columns
 boeing_data = boeing_data.dropna(subset=['Latitude','Longitude'])
-boeing_data.head()
 
 # Create a feature group for host sites
 host_sites_layer = folium.FeatureGroup(name="Host Sites")

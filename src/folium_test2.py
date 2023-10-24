@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import geopandas
 
-def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=None, layer_names=None):
+def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=None, layer_names=None, boeing_data=None):
     """
     Create a Folium map with filtered data points, interactive filters, and geospatial layers.
 
@@ -38,7 +38,7 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
           <i class="fas fa-exclamation-circle"></i>
         </div>
         """
-        
+
         folium.Marker(
             location=latlng,
             popup=popup,
@@ -58,10 +58,31 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
         for i, layer in enumerate(geospatial_layers):
             folium.GeoJson(layer, name= layer_names[i]).add_to(m)
 
+    # Add a layer for Boeing data if provided
+    if boeing_data is not None:
+        boeing_layer = folium.FeatureGroup(name="Boeing Data")
+        boeing_layer.add_to(m)
+
+        for index, row in boeing_data.iterrows():
+            latlng = (row['Latitude'], row['Longitude'])
+            
+            # Create a custom airplane-shaped icon
+            icon = folium.CustomIcon(
+                icon_image='https://palmettogoodwill.org/wp-content/uploads/2022/04/png-transparent-boeing-logo-boeing-business-jet-logo-boeing-commercial-airplanes-integrated-blue-company-text.png',
+                icon_size=(20, 20)
+            )
+            
+            folium.Marker(
+                location=latlng,
+                icon=icon,
+            ).add_to(boeing_layer)
+
     # Add a layer control to toggle the visibility of the data points, filters, and geospatial layers
     folium.LayerControl(collapsed=False).add_to(m)
 
     return m
+
+
 
 ######################## DATA PREP ####################################
 df = pd.read_csv('../lib/processed/tidy_data.csv')
@@ -69,7 +90,7 @@ df.head()
 
 # Randomly select 10% of the data (for working locally)
 # Calculate the number of rows to sample (10%)
-sample_fraction = 0.5
+sample_fraction = 0.05
 sample_size = int(len(df) * sample_fraction)
 
 # Randomly select 10% of the data
@@ -93,8 +114,19 @@ cities = geopandas.read_file(
     driver="GeoJSON",
 )
 
+us_cities = geopandas.sjoin(cities, states, how="inner", predicate="within")
+us_cities.head()
+
+pop_ranked_cities = us_cities.sort_values(by="pop_max", ascending=False)[
+    ["nameascii", "pop_max", "geometry"]
+].iloc[:40]
+
+# Load Boeing data
+boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
+boeing_data = boeing_data.dropna(subset=['Latitude', 'Longitude'])
+
 # Create the Folium map with filters and geospatial layers
-filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=[states, cities], layer_names = ["states", "cities"])
+filtered_map = create_filtered_map(df, 'lat', 'long', filter_columns, geospatial_layers=[states, pop_ranked_cities], layer_names = ["states", "cities"], boeing_data= boeing_data)
 
 # Save or display the map
 filtered_map.save('filtered_map.html')
