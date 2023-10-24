@@ -77,25 +77,67 @@ def create_filtered_map(df, lat_col, lon_col, filter_cols, geospatial_layers=Non
     m = folium.Map(location=[df[lat_col].mean(), df[lon_col].mean()], zoom_start=5)
 
     # Calculate the number of records in each state
-    def style_function(x):
+    def style_function_count(x):
         state_name = x["properties"]["name"]
         # Use the mapping to get the abbreviation
         state_abbreviation = state_abbreviations.get(state_name, state_name)
         
         # Use the abbreviation for lookup
         citation_count = df[df['state'] == state_abbreviation]['state'].count()
-    
+
         return {
-            "fillColor": f"#ff0000{citation_count:02x}",  # Set state color based on citation count
+            "fillColor": f"#ff0000{citation_count:02}",  # Set state color based on citation count
             "color": "black",
             "weight": 2,
             "fillOpacity": 0.6
         }
+    
+    def style_function_avg_cost(x):
+        state_name = x["properties"]["name"]
+        # Use the mapping to get the abbreviation
+        state_abbreviation = state_abbreviations.get(state_name, state_name)
+        
+        # Use the abbreviation for lookup
+        avg_compliance_action = df[df['state'] == state_abbreviation]['compliance_action_cost'].mean()
+        
+        # Check if avg_compliance_action is NaN and handle it
+        if pd.notna(avg_compliance_action):
+            # Normalize the average cost to a range from 0 to 1
+            min_cost = df['compliance_action_cost'].min()
+            max_cost = df['compliance_action_cost'].max()
+            normalized_cost = (avg_compliance_action - min_cost) / (max_cost - min_cost)
 
-    stategeo = folium.GeoJson(
+            return {
+                "fillColor": f"#ff0000{int(normalized_cost * 100):02}",  # Set state color based on normalized cost
+                "color": "black",
+                "weight": 2,
+                "fillOpacity": 0.6
+            }
+        else:
+            # Handle NaN values (you can choose to give them a specific color or treatment)
+            return {
+                "fillColor": "#cccccc",  # Gray color for NaN values
+                "color": "black",
+                "weight": 2,
+                "fillOpacity": 0.6
+            }
+
+
+    stategeo_count = folium.GeoJson(
         states,
-        name="Citations/State",
-        style_function=style_function,
+        name="Citation Count by State",
+        style_function=style_function_count,
+        tooltip=folium.GeoJsonTooltip(
+            fields=["name"],
+            aliases=["State"],
+            localize=True
+        ),
+    ).add_to(m)
+
+    stategeo_avg_cost = folium.GeoJson(
+        states,
+        name="Avg Complience Cost by State",
+        style_function=style_function_avg_cost,
         tooltip=folium.GeoJsonTooltip(
             fields=["name"],
             aliases=["State"],
