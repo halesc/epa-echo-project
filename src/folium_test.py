@@ -205,6 +205,13 @@ for index, row in boeing_data.iterrows():
     latlng = (float(row["Latitude"]), float(row["Longitude"]))
     host_site = row["Host Site"]
 
+    annotation_columns = ['Description','Site','Property','Address','City']
+
+    # Create a popup message with annotations
+    popup_html = f"<b>{host_site}</b><br>"
+    for column in annotation_columns:
+        popup_html += f"{column}: {row[column]}<br>"
+
     folium.CircleMarker(
         location=latlng,
         radius=4,
@@ -212,7 +219,7 @@ for index, row in boeing_data.iterrows():
         fill=True,
         fill_color="green",
         fill_opacity=.6,
-        popup=host_site,
+        popup=popup_html,
     ).add_to(host_sites_layer)
 
 # Add the host sites feature group to the map
@@ -222,34 +229,41 @@ host_sites_layer.add_to(m)
 ########################## Citations
 
 # Define a function to add markers and filters for a specific category
-def add_markers_and_filter(df, category_column, map):
+def add_markers_and_filter(df, category_column, map, annotation_columns=[]):
     categories = df[category_column].unique().tolist()
     categories_sorted = sorted(categories)
     
     for index, row in df.iterrows():
         latlng = (row['lat'], row['long'])
         category = row[category_column]
-
+        
         # Create a custom HTML icon with a red exclamation mark
         icon_html = """
         <div style="font-size: 8px; color: red;">
           <i class="fas fa-exclamation-circle"></i>
         </div>
         """
-
+        
+        # Create a popup message with annotations
+        popup_html = f"<b>{category}</b><br>"
+        for column in annotation_columns:
+            popup_html += f"{column}: {row[column]}<br>"
+        
         folium.Marker(
             location=latlng,
-            icon=folium.DivIcon(html=icon_html),  # Use the custom icon
-            popup=category,
-            tags=[category]  # Set the category as a popup message
+            icon=folium.DivIcon(html=icon_html),
+            popup=folium.Popup(html=popup_html),  # Use the custom icon and annotation
+            tags=[category]
         ).add_to(map)
 
     TagFilterButton(categories_sorted, name=category_column).add_to(map)
 
+annotations = ['registry_id','primary_law', 'enf_outcome_code','fed_penalty_assessed_amt', 'compliance_action_cost', 'county', 'epa_region', 'air_pollutant_class_code']
 
-# Create markers and filters for 'primary_law'
-add_markers_and_filter(df, 'primary_law', m)
-add_markers_and_filter(df, 'state', m)
+# Create markers and filters for 'primary_law' with annotations for 'column1' and 'column2'
+add_markers_and_filter(df, 'primary_law', m, annotation_columns=annotations)
+# Create markers and filters for 'state' with annotations for 'column3' and 'column4'
+add_markers_and_filter(df, 'state', m, annotation_columns=annotations)
 
 # Create a HeatMap layer
 heat_data = [[row['lat'], row['long']] for index, row in df.iterrows()]
