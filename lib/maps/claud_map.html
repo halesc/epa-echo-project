@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+  </head>
+
+  <body>
+    <svg width="960" height="600"></svg>
+
+    <script>
+      // Load GeoJSON data
+      d3.json(
+        "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json",
+        function (json) {
+          // Create path generator
+          const path = d3.geoPath();
+
+          // Draw state outlines
+          svg
+            .selectAll("path")
+            .data(json.features)
+            .enter()
+            .append("path")
+            .attr("d", path)
+            .attr("fill", "#ddd")
+            .attr("stroke", "white");
+        }
+      );
+
+      // Create Albers USA projection
+      const projection = d3
+        .geoAlbersUsa()
+        .translate([width / 2, height / 2])
+        .scale([1000]);
+
+      // Set projection on path generator
+      path.projection(projection);
+    </script>
+  </body>
+</html>
