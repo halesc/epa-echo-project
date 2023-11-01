@@ -11,6 +11,13 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 import folium
 from streamlit_folium import st_folium
+from my_map import create_html_map
+from folium.plugins import TagFilterButton, Search, LocateControl, HeatMap
+import numpy as np
+import random
+import branca
+import geopandas
+import webbrowser
 
 # TODO: A value is trying to be set on a copy of a slice from a DataFrame.
 # In relation to rounding the values in the dataframe.
@@ -207,6 +214,10 @@ def display_map(merged_data):
         state_name = st_map["last_active_drawing"]["properties"]["name"]
     return abbrev_name(state_name)
 
+# Function to display the HTML map
+def display_html_map(html_map):
+    # Use the "html" component to display the HTML string as an iframe
+    st.write(html_map, unsafe_allow_html=True)
 
 def display_pie_chart(merged_data, grouped_data_low_income, state, county):
     merged_data = merged_data[(merged_data["state"] == state) & (merged_data["county"] == county)]
@@ -357,7 +368,7 @@ def main():
     case_data["other"] = 1 - (case_data["hispanic_population_ratio"] + case_data["asian_population_ratio"] + case_data["american_indian_population_ratio"] + case_data["black_population_ratio"] + case_data["white_population_ratio"])
     case_data = case_data[case_data["other"] >= 0]
 
-    choice = st.selectbox("Display Choice", ("Demographics and Fine Predictor", "Heat Map", "Utilities"))
+    choice = st.selectbox("Display Choice", ("Demographics and Fine Predictor", "Heat Map", "Utilities","Heat Map2"))
 
     if choice == "Demographics and Fine Predictor":
         APP_TITLE = "DEMOGRAPHICS ANALYSIS"
@@ -444,6 +455,22 @@ def main():
         primary_law = st.selectbox("Which Primary Law?", (laws_tuple))
         display_facts(grouped_data_metrics, state, county, primary_law, "Average Penalty")
         plot_count_of_violations_and_penalty_value(case_data)
+    if choice == "Heat Map2":
+        # Create a Streamlit app
+        st.title("Open HTML File in a New Window")
+
+        # Define a function to open the HTML file in a new window
+        def open_html_file():
+            # Replace 'your_file.html' with the path to your HTML file
+            file_path = 'lib/maps/map.html'
+            webbrowser.open_new_tab(file_path)
+
+        # Create a button to trigger the opening of the HTML file
+        if st.button("Open HTML File"):
+            open_html_file()
+
+
+
     if choice == "Utilities":
         APP_TITLE = "Processing Utilities"
         APP_SUB_TITLE = "Here new data can be extracted and transformed, as well as models retrained."
