@@ -1,38 +1,3 @@
-# https://gispub.epa.gov/air/trendsreport/2021/#pm2_5_composition
-# Medium: https://medium.com/p/e3aff3b0ed43
-
-# Word Press: https://waterprogramming.wordpress.com/2023/04/05/creating-interactive-geospatial-maps-in-python-with-folium/
-# Examples: https://github.com/TrevorJA/Folium_Interactive_Map_Demo
-
-# Folium examples: https://github.com/python-visualization/folium/tree/main/examples
-
-# ****Filters: https://python-visualization.github.io/folium/latest/user_guide/plugins/tag_filter_button.html
-
-# Crime Example: https://domino.ai/blog/creating-interactive-crime-maps-with-folium
-
-## Wants:
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/search.html
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/heatmap.html
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/locate_control.html
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/measure_control.html
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/mouse_position.html
-# https://python-visualization.github.io/folium/latest/user_guide/plugins/timeslider_choropleth.html
-
-# Advanced Options 
-# https://python-visualization.github.io/folium/latest/advanced_guide.html
-
-
-# https://medium.com/planet-os/analyzing-air-quality-data-from-planet-os-datahub-using-python-pandas-and-plotly-f2766c003c6c
-
-
-# Options:
-# https://openaq.org/
-
-# DataSources
-# Full list: https://github.com/openaq/awesome-air-quality
-# AWS Example: https://github.com/openaq/openaq-api-v2
-# BigQuery: https://medium.com/@Faraz_EA/analyzing-epa-air-quality-data-using-bigquery-and-choropleth-map-f1c59b0406f4
-
 import pandas as pd
 import folium
 from folium.plugins import TagFilterButton, Search, LocateControl, HeatMap
@@ -106,7 +71,7 @@ cities = geopandas.read_file(
 )
 
 ######################## DATA PREP ####################################
-df = pd.read_csv('../lib/processed/tidy_data.csv')
+df = pd.read_csv('./lib/processed/tidy_data.csv')
 df.head()
 
 # Randomly select 10% of the data (for working locally)
@@ -117,10 +82,6 @@ sample_size = int(len(df) * sample_fraction)
 # Randomly select 10% of the data
 df = df.sample(n=sample_size, random_state=42)
 df = df.dropna(subset=['lat', 'long'])
-
-# penalty_frequency color
-def rd2(x):
-    return round(x, 2)
 
 us_cities = geopandas.sjoin(cities, states, how="inner", predicate="within")
 us_cities.head()
@@ -195,35 +156,35 @@ citysearch = Search(
 ).add_to(m)
 
 ########################## Boeing Layer
-boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
-boeing_data = boeing_data.dropna(subset=['Latitude','Longitude'])
+# boeing_data = pd.read_csv('../lib/raw/geocoded_data.csv')
+# boeing_data = boeing_data.dropna(subset=['Latitude','Longitude'])
 
-# Create a feature group for host sites
-host_sites_layer = folium.FeatureGroup(name="Host Sites")
+# # Create a feature group for host sites
+# host_sites_layer = folium.FeatureGroup(name="Host Sites")
 
-for index, row in boeing_data.iterrows():
-    latlng = (float(row["Latitude"]), float(row["Longitude"]))
-    host_site = row["Host Site"]
+# for index, row in boeing_data.iterrows():
+#     latlng = (float(row["Latitude"]), float(row["Longitude"]))
+#     host_site = row["Host Site"]
 
-    annotation_columns = ['Description','Site','Property','Address','City']
+#     annotation_columns = ['Description','Site','Property','Address','City']
 
-    # Create a popup message with annotations
-    popup_html = f"<b>{host_site}</b><br>"
-    for column in annotation_columns:
-        popup_html += f"{column}: {row[column]}<br>"
+#     # Create a popup message with annotations
+#     popup_html = f"<b>{host_site}</b><br>"
+#     for column in annotation_columns:
+#         popup_html += f"{column}: {row[column]}<br>"
 
-    folium.CircleMarker(
-        location=latlng,
-        radius=4,
-        color="green",
-        fill=True,
-        fill_color="green",
-        fill_opacity=.6,
-        popup=popup_html,
-    ).add_to(host_sites_layer)
+#     folium.CircleMarker(
+#         location=latlng,
+#         radius=4,
+#         color="green",
+#         fill=True,
+#         fill_color="green",
+#         fill_opacity=.6,
+#         popup=popup_html,
+#     ).add_to(host_sites_layer)
 
-# Add the host sites feature group to the map
-host_sites_layer.add_to(m)
+# # Add the host sites feature group to the map
+# host_sites_layer.add_to(m)
 
 
 ########################## Citations
@@ -272,7 +233,7 @@ heat_map.add_to(m)
 
 folium.LayerControl().add_to(m)
 folium.plugins.LocateControl(auto_start=False).add_to(m)
-m.save('map.html')
+m.save('./lib/maps/map.html')
 
 
 

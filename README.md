@@ -81,3 +81,38 @@ Finally there is a button to retrain the demographic model. Note this is usually
 ### View html
 
 Ubuntu `xdg-open src/map.html`
+
+### Examples
+
+https://gispub.epa.gov/air/trendsreport/2021/#pm2_5_composition
+Medium: https://medium.com/p/e3aff3b0ed43
+
+Word Press: https://waterprogramming.wordpress.com/2023/04/05/creating-interactive-geospatial-maps-in-python-with-folium/
+Examples: https://github.com/TrevorJA/Folium_Interactive_Map_Demo
+
+Folium examples: https://github.com/python-visualization/folium/tree/main/examples
+
+\*\*\*\*Filters: https://python-visualization.github.io/folium/latest/user_guide/plugins/tag_filter_button.html
+
+Crime Example: https://domino.ai/blog/creating-interactive-crime-maps-with-folium
+
+Wants:
+https://python-visualization.github.io/folium/latest/user_guide/plugins/search.html
+https://python-visualization.github.io/folium/latest/user_guide/plugins/heatmap.html
+https://python-visualization.github.io/folium/latest/user_guide/plugins/locate_control.html
+https://python-visualization.github.io/folium/latest/user_guide/plugins/measure_control.html
+https://python-visualization.github.io/folium/latest/user_guide/plugins/mouse_position.html
+https://python-visualization.github.io/folium/latest/user_guide/plugins/timeslider_choropleth.html
+
+Advanced Options
+https://python-visualization.github.io/folium/latest/advanced_guide.html
+
+https://medium.com/planet-os/analyzing-air-quality-data-from-planet-os-datahub-using-python-pandas-and-plotly-f2766c003c6c
+
+Options:
+https://openaq.org/
+
+DataSources
+Full list: https://github.com/openaq/awesome-air-quality
+AWS Example: https://github.com/openaq/openaq-api-v2
+BigQuery: https://medium.com/@Faraz_EA/analyzing-epa-air-quality-data-using-bigquery-and-choropleth-map-f1c59b0406f4
