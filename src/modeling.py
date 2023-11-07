@@ -15,9 +15,10 @@ from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 
 DT = datetime.datetime.now()
 print("Start Training and Testing the Model...", flush=True)
-READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "app/lib/processed/")
-MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "app/lib/models/")
+READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "../epa-echo-project/lib/processed/")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "../epa-echo-project/lib/models/")
 case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
+case_details_demographics.columns
 
 # Remove outliers.
 percentile_10 = case_details_demographics["fed_penalty_assessed_amt"].quantile(0.05)
@@ -26,10 +27,12 @@ percentile_90 = case_details_demographics["fed_penalty_assessed_amt"].quantile(0
 case_details_demographics = case_details_demographics[(case_details_demographics["fed_penalty_assessed_amt"] >= percentile_10) & (case_details_demographics["fed_penalty_assessed_amt"] <= percentile_90)]
 case_details_demographics = case_details_demographics[case_details_demographics["county"] != "Oakland"]
 
-case_details_demographics_subset = case_details_demographics.sample(frac=0.1, random_state=42)
 label_encoder = LabelEncoder()
+case_details_demographics['State'] = label_encoder.fit_transform(case_details_demographics['state'])
 
-case_details_demographics_subset['State'] = label_encoder.fit_transform(case_details_demographics_subset['state'])
+case_details_demographics_subset = case_details_demographics.sample(frac=0.1, random_state=42)
+
+
 encoded_to_original = dict(zip(case_details_demographics_subset['State'], case_details_demographics_subset['state']))
 original_to_encoded = {v: k for k, v in encoded_to_original.items()}
 
@@ -63,4 +66,19 @@ mae_bagging = mean_absolute_error(y_test, bagging_y_pred)
 
 pickle.dump(bagging_model, open(MODEL_PATH + "rf_model.pkl", "wb"))
 pickle.dump(bagging_model, open(MODEL_PATH + f"rf_model_{DT.year}{DT.month}{DT.day}.pkl", "wb"))
+
+# Load the trained model
+loaded_model = pickle.load(open(MODEL_PATH + "rf_model.pkl", "rb"))
+
+# Make predictions using the loaded model for each record in the results table
+case_details_demographics.columns
+
+result = case_details_demographics
+
+result['predicted_value'] = loaded_model.predict(result[['black_population_ratio', 'white_population_ratio', "hispanic_population_ratio", 'asian_population_ratio', 'american_indian_population_ratio', 'low_income_ratio', 'State']])
+
+# Save the updated DataFrame to a new CSV file
+result.to_csv(MODEL_PATH + "tidy_data_with_predictions.csv", index=False)
+
+print("Completed Training: Model Applied to Results Table and Saved to lib/models", flush=True)
 print("Completed Training: Model Saved to lib/models/", flush=True)
