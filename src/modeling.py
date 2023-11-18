@@ -9,14 +9,20 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import BaggingRegressor, RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Access the variables using os.environ
+path_variable = os.environ.get("DEV_PATH")
 
 # TODO: Add the ability to select which features to use.
 # TODO: Add in automated param tuning. Maybe a button for this in main.py.
 
 DT = datetime.datetime.now()
 print("Start Training and Testing the Model...", flush=True)
-READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), "../epa-echo-project/lib/processed/")
-MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), "../epa-echo-project/lib/models/")
+READ_PATH = os.path.join(os.path.dirname(os.path.abspath("")[:-3]), f"{path_variable}/lib/processed/")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath("")), f"{path_variable}/lib/models/")
 case_details_demographics = pd.read_csv(READ_PATH + "tidy_data.csv")
 case_details_demographics.columns
 
@@ -65,7 +71,7 @@ r2_bagging = r2_score(y_test, bagging_y_pred)
 mae_bagging = mean_absolute_error(y_test, bagging_y_pred)
 
 pickle.dump(bagging_model, open(MODEL_PATH + "rf_model.pkl", "wb"))
-pickle.dump(bagging_model, open(MODEL_PATH + f"rf_model_{DT.year}{DT.month}{DT.day}.pkl", "wb"))
+# pickle.dump(bagging_model, open(MODEL_PATH + f"rf_model_{DT.year}{DT.month}{DT.day}.pkl", "wb"))
 
 # Load the trained model
 loaded_model = pickle.load(open(MODEL_PATH + "rf_model.pkl", "rb"))
@@ -82,3 +88,4 @@ result.to_csv(MODEL_PATH + "tidy_data_with_predictions.csv", index=False)
 
 print("Completed Training: Model Applied to Results Table and Saved to lib/models", flush=True)
 print("Completed Training: Model Saved to lib/models/", flush=True)
+print("Completed Data Generation for Tableau: ./models/tidy_data_with_predictions.csv ")

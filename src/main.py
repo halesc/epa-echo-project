@@ -11,6 +11,12 @@ from sklearn.linear_model import LinearRegression
 import numpy as np
 import folium
 from streamlit_folium import st_folium
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Access the variables using os.environ
+path_variable = os.environ.get("DEV_PATH")
 
 # TODO: A value is trying to be set on a copy of a slice from a DataFrame.
 # In relation to rounding the values in the dataframe.
@@ -19,9 +25,9 @@ from streamlit_folium import st_folium
 
 STATES_DICT = {"Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Canal Zone": "CZ", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "District of Columbia": "DC", "Florida": "FL", "Georgia": "GA", "Guam": "GU", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Puerto Rico": "PR", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virgin Islands": "VI", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY"}
 FILE_PATH = os.path.dirname(os.path.abspath("")[:-3])
-RF_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "rf_model.pkl")
-LN_MODEL_PATH = os.path.join(FILE_PATH, "app/lib/models", "ln_model.pkl")
-DATA_PATH = os.path.join(FILE_PATH, "app/lib/processed", "tidy_data.csv")
+RF_MODEL_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/models", "rf_model.pkl")
+LN_MODEL_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/models", "ln_model.pkl")
+DATA_PATH = os.path.join(FILE_PATH, f"{path_variable}/lib/models", "tidy_data.csv")
 
 # in order to received client inputs appended these inputs (created above) into dictionary as we mentioned before. And We returned into dataframe.
 

@@ -10,7 +10,7 @@ lib/processed/icis-air_facilities.csv
 lib/processed/icis-npdes_facilities.csv
 lib/processed/legislators.csv
 lib/processed/tidy_data_*
+lib/processed/tidy_data.csv
 src/__pycache__/**
 *_old.py
-lib/models/tidy_data_with_predictions.csv
 .venv*

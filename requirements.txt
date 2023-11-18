@@ -1,12 +1,13 @@
 requests==2.31.0
 datetime==5.2
-pandas==2.0.3
+pandas
 numpy==1.25.2
 scipy==1.11.1
 scikit-learn==1.2.1
 streamlit==1.24.0
-altair==4.1.0
-folium==0.14.0
-streamlit==1.24.0
-streamlit-folium==0.13.0
-matplotlib==3.7.2
+# altair==4.1.0
+# folium==0.14.0
+# streamlit==1.24.0
+# streamlit-folium==0.13.0
+# matplotlib==3.7.2
+python-dotenv==0.16.0
