@@ -48,6 +48,12 @@ Assumes you ran `export DEV_PATH="epa-echo-project"` above ⚠️
 
 Now all you need to do is replace the existing `tidy_data_with_predictions.csv` file in tableau with the updated version and the tableua workbook will update everything!
 
+Note the "Site Listing Speadsheet" is manually created and updated by boeing. 
+If you need to update this infromation:
+- down load this data source as a xlsx
+- update the site infromation as needed
+- load new data. (Recommend the below for this as well)
+
 Recommendation:
 My guess is that Boeing uses Tabelau for Dashboarding and Snowflake for Data Warehousing. 
 I would reccomend writing this data to a snowflake table and having the tableau workbook link to that data source.
